@@ -9,9 +9,9 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import type { DatabaseManager } from '../database/schema.js';
 import type { Evaluator } from '../services/evaluator.js';
-import { encode, decode, type Signal } from './protocol.js';
+import { encode, decode, getSignalName, type Signal } from './protocol.js';
 import { handleSignal, type HandlerContext } from './handlers.js';
-import { isWhitelisted, getWhitelist, getTumblerStats } from './tumbler.js';
+import { isWhitelisted, getTumblerStats } from './tumbler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -95,13 +95,15 @@ export function createInterLockMesh(
 
   // Emit function to broadcast to peers
   function emit(signal: Signal): void {
-    if (!isWhitelisted(signal.name)) {
-      console.error(`[tenets-server] Signal ${signal.name} not whitelisted, not emitting`);
+    const signalName = getSignalName(signal.signalType);
+    if (!isWhitelisted(signalName)) {
+      console.error(`[tenets-server] Signal ${signalName} not whitelisted, not emitting`);
       stats.dropped++;
       return;
     }
 
-    const buffer = encode(signal);
+    const { sender, ...data } = signal.payload;
+    const buffer = encode(signal.signalType, sender, data);
 
     for (const peer of peers) {
       const address = peer.address || '127.0.0.1';
@@ -145,7 +147,7 @@ export function createInterLockMesh(
     }
 
     // Silently ignore non-whitelisted signals
-    if (!isWhitelisted(signal.name)) {
+    if (!isWhitelisted(getSignalName(signal.signalType))) {
       stats.dropped++;
       return;
     }

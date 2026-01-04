@@ -18,7 +18,7 @@ export interface HandlerContext {
  * Handle incoming signals
  */
 export function handleSignal(signal: Signal, context: HandlerContext): void {
-  switch (signal.code) {
+  switch (signal.signalType) {
     case SignalTypes.DECISION_PENDING:
       handleDecisionPending(signal, context);
       break;
@@ -36,7 +36,7 @@ export function handleSignal(signal: Signal, context: HandlerContext): void {
       break;
 
     default:
-      console.error(`[tenets-server] Unknown signal code: ${signal.code}`);
+      console.error(`[tenets-server] Unknown signal type: ${signal.signalType}`);
   }
 }
 
@@ -45,7 +45,7 @@ export function handleSignal(signal: Signal, context: HandlerContext): void {
  * Evaluate the pending decision
  */
 function handleDecisionPending(signal: Signal, context: HandlerContext): void {
-  const data = signal.data;
+  const { sender, ...data } = signal.payload;
   if (!data?.decision_text) {
     console.error('[tenets-server] DECISION_PENDING missing decision_text');
     return;
@@ -98,7 +98,7 @@ function handleDecisionPending(signal: Signal, context: HandlerContext): void {
  * Check if the operation had moral implications
  */
 function handleOperationComplete(signal: Signal, context: HandlerContext): void {
-  const data = signal.data;
+  const { sender, ...data } = signal.payload;
   if (!data?.operation) {
     return; // Silent ignore if no operation details
   }
@@ -110,7 +110,7 @@ function handleOperationComplete(signal: Signal, context: HandlerContext): void 
   if (quickResult.counterfeitDetected) {
     context.emit(createSignal(SignalTypes.COUNTERFEIT_DETECTED, {
       operation,
-      sender: signal.sender,
+      sender,
     }));
   }
 }
@@ -120,7 +120,7 @@ function handleOperationComplete(signal: Signal, context: HandlerContext): void 
  * Update patterns based on the lesson
  */
 function handleLessonLearned(signal: Signal, context: HandlerContext): void {
-  const data = signal.data;
+  const { sender, ...data } = signal.payload;
   if (!data?.lesson) {
     return;
   }
