@@ -1,0 +1,44 @@
+{
+  "server": {
+    "name": "tenets-server",
+    "port": 3027,
+    "httpPort": 8027,
+    "wsPort": 9027
+  },
+  "mesh": {
+    "heartbeatInterval": 30000,
+    "heartbeatTimeout": 90000
+  },
+  "signals": {
+    "listen": [
+      { "code": "0xD0", "name": "DECISION_PENDING", "from": ["consciousness"] },
+      { "code": "0xFF", "name": "OPERATION_COMPLETE", "from": ["*"] },
+      { "code": "0xE5", "name": "LESSON_LEARNED", "from": ["consciousness"] },
+      { "code": "0x00", "name": "HEARTBEAT", "from": ["*"] }
+    ],
+    "emit": [
+      { "code": "0xB0", "name": "TENET_VIOLATION", "to": ["consciousness", "experience-layer"] },
+      { "code": "0xB1", "name": "COUNTERFEIT_DETECTED", "to": ["consciousness"] },
+      { "code": "0xB2", "name": "ETHICS_AFFIRMED", "to": ["consciousness"] },
+      { "code": "0xB3", "name": "BLIND_SPOT_ALERT", "to": ["consciousness"] },
+      { "code": "0xB4", "name": "REMEDIATION_NEEDED", "to": ["consciousness"] }
+    ]
+  },
+  "peers": [
+    { "name": "consciousness", "port": 3028 },
+    { "name": "experience-layer", "port": 3031 },
+    { "name": "skill-builder", "port": 3029 },
+    { "name": "context-guardian", "port": 3001 }
+  ],
+  "whitelist": [
+    "DECISION_PENDING",
+    "OPERATION_COMPLETE",
+    "LESSON_LEARNED",
+    "HEARTBEAT",
+    "TENET_VIOLATION",
+    "COUNTERFEIT_DETECTED",
+    "ETHICS_AFFIRMED",
+    "BLIND_SPOT_ALERT",
+    "REMEDIATION_NEEDED"
+  ]
+}

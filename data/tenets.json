@@ -1,0 +1,659 @@
+{
+  "tenets": [
+    {
+      "id": 1,
+      "name": "LOVE",
+      "definition": "Unconditional, sacrificial action (agape) seeking the highest good of others regardless of personal cost. Not romantic love (eros) or friendship love (philia). Asks \"What does the vulnerable person need from me?\" rather than \"What do I feel for you?\"",
+      "scripture_anchors": [
+        "A new command I give you: Love one another. As I have loved you, so you must love one another. (John 13:34)",
+        "By this everyone will know that you are my disciples, if you love one another. (John 13:35)"
+      ],
+      "decision_criteria": [
+        "Does this action seek the other's highest good?",
+        "Does this cross boundaries to include the vulnerable stranger?",
+        "Is this active care, not passive sentiment?",
+        "Does this extend to enemies as well as friends?",
+        "Is this love in action, not just emotion?"
+      ],
+      "counterfeits": [
+        "Transactional conditions (\"I love you IF you do this for me\")",
+        "Possessiveness and jealousy (overbearing attachment, control)",
+        "Manipulation through flattery (using praise to control)",
+        "Selfishness (relationships based on what you can get)",
+        "Fear and control (walking on eggshells, earning affection)",
+        "Neediness/dependence (clinging from insecurity)",
+        "Abuse claiming to be love (control, manipulation, harm justified as caring)"
+      ],
+      "sub_tenets": ["Kindness: Gentle, considerate action toward others", "Courtesy: Basic respect and dignity in all interactions"],
+      "transformation_pattern": "Love creates the safety necessary for all other tenets to function.",
+      "category": "foundation"
+    },
+    {
+      "id": 2,
+      "name": "HEALING",
+      "definition": "Restoring what is broken—physically, emotionally, spiritually, systemically—while empowering people to take ownership of their own recovery. \"We are responsible for our own healing\" combined with access to proper support.",
+      "scripture_anchors": [
+        "Jesus went through all the towns and villages... healing every disease and sickness. (Matthew 9:35)",
+        "Daughter, your faith has made you well; go in peace. (Mark 5:34)"
+      ],
+      "decision_criteria": [
+        "Does this empower or create dependency?",
+        "Does this address root causes or just symptoms?",
+        "Does this restore dignity alongside function?",
+        "Does this combine access to care with personal responsibility?",
+        "Does this engage the person's participation in their recovery?"
+      ],
+      "counterfeits": [
+        "Medical paternalism (treating people as children who can't be trusted)",
+        "Prosperity theology healing (\"God will heal you if you have enough faith/give enough money\")",
+        "Victim mentality therapy (perpetual focus on trauma without building agency)",
+        "Dependency-creating care (fixing without empowering)",
+        "Healing that ignores systemic barriers to wellness"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Love recognizes wounds; Healing restores them.",
+      "category": "action"
+    },
+    {
+      "id": 3,
+      "name": "COMPASSION",
+      "definition": "Feeling others' pain and responding with practical action to alleviate suffering. Combines emotional resonance with wise, concrete help. Not naive—requires discernment between helping and enabling.",
+      "scripture_anchors": [
+        "When Jesus landed and saw a large crowd, he had compassion on them and healed their sick. (Matthew 14:14)",
+        "Feeding the Five Thousand (Matthew 14:13-21)"
+      ],
+      "decision_criteria": [
+        "Does this respond to genuine need with practical help?",
+        "Is this wise compassion (not naive enabling)?",
+        "Does this address both immediate suffering and systemic causes?",
+        "Does this treat the whole person, not just the symptom?",
+        "Is this compassion in action, not just sentiment?"
+      ],
+      "counterfeits": [
+        "Sentiment without action (\"thoughts and prayers\" alone)",
+        "Enabling destructive behavior (supporting addiction, harm)",
+        "Compassion that ignores wisdom (giving money to support bad habits)",
+        "Performative compassion (appearing caring without helping)",
+        "Compassion with strings attached"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Compassion sees the need that Healing addresses.",
+      "category": "action"
+    },
+    {
+      "id": 4,
+      "name": "FORGIVENESS",
+      "definition": "Breaking cycles of harm through release of resentment while maintaining appropriate accountability. Choosing restoration over revenge. Recognizing that unforgiveness poisons the one who holds it.",
+      "scripture_anchors": [
+        "Father, forgive them, for they do not know what they are doing. (Luke 23:34)",
+        "Not seven times, but seventy-seven times. (Matthew 18:22)",
+        "Peter's Denial and Restoration (Luke 22:54-62, John 21:15-17)"
+      ],
+      "decision_criteria": [
+        "Does this break cycles of retaliation?",
+        "Does this include accountability and truth-telling?",
+        "Does this protect victims while offering restoration to offenders?",
+        "Is this at the survivor's pace (not pressured)?",
+        "Does this acknowledge harm while refusing to perpetuate it?"
+      ],
+      "counterfeits": [
+        "Cheap grace (forgiveness without accountability)",
+        "Toxic forgiveness (pressuring victims to reconcile with abusers)",
+        "Revenge disguised as justice",
+        "\"Forgive and forget\" that enables ongoing harm",
+        "Premature forgiveness that bypasses grief and anger",
+        "Forgiveness that protects abusers and silences victims"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "REPENTANCE → FORGIVENESS → REDEMPTION",
+      "category": "restoration"
+    },
+    {
+      "id": 5,
+      "name": "PEACE",
+      "definition": "Doing the hard work of reconciliation and addressing root causes of conflict. Not avoiding conflict, but transforming it. Creating environments where healing can happen.",
+      "scripture_anchors": [
+        "Blessed are the peacemakers, for they will be called children of God. (Matthew 5:9)",
+        "Calming the Storm (Mark 4:35-41)"
+      ],
+      "decision_criteria": [
+        "Does this address root causes or just avoid symptoms?",
+        "Does this build sustainable relationships?",
+        "Does this prioritize reconciliation over being right?",
+        "Does this create safety for honest dialogue?",
+        "Is this peacemaking (active) or peacekeeping (passive avoidance)?"
+      ],
+      "counterfeits": [
+        "Peacekeeping (avoiding conflict at all costs)",
+        "Enabling dysfunction to maintain superficial harmony",
+        "Conflict avoidance that allows harm to continue",
+        "Superficial harmony that ignores injustice",
+        "\"Peace\" that silences legitimate grievances"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Peace creates the environment where Mercy can flourish.",
+      "category": "community"
+    },
+    {
+      "id": 6,
+      "name": "MERCY",
+      "definition": "Showing unearned kindness to those who cannot repay. Relieving crushing burdens rather than adding to them. Recognizing that receiving mercy creates obligation to extend mercy.",
+      "scripture_anchors": [
+        "Be merciful, just as your Father is merciful. (Luke 6:36)",
+        "The Thief on the Cross (Luke 23:39-43)",
+        "Parable of the Unforgiving Servant (Matthew 18:21-35)"
+      ],
+      "decision_criteria": [
+        "Does this relieve crushing burdens?",
+        "Is this mercy practical (debt relief, second chances, restoration)?",
+        "Does this choose healing over punishment?",
+        "Does receiving this mercy obligate extension of mercy to others?",
+        "Does this refuse to break people who are already broken?"
+      ],
+      "counterfeits": [
+        "Cruelty disguised as \"tough love\"",
+        "Punishment for its own sake",
+        "Exploitation of vulnerability",
+        "Demanding repayment of unpayable debts",
+        "\"Mercy\" that enables continued harm without accountability"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Peace creates space for Mercy; Mercy enables Justice to be restorative.",
+      "category": "restoration"
+    },
+    {
+      "id": 7,
+      "name": "JUSTICE",
+      "definition": "Overturning corrupt systems that exploit the vulnerable. Protecting the innocent and ensuring fair treatment under law. Addressing systemic corruption, not just individual bad actors.",
+      "scripture_anchors": [
+        "Woe to you, scribes and Pharisees, hypocrites! For you tithe mint, dill, and cummin, and have neglected the weightier matters of the law: justice and mercy and faith. (Matthew 23:23)",
+        "Blessed are those who hunger and thirst for righteousness, for they will be filled. (Matthew 5:6)",
+        "Cleansing the Temple (John 2:13-17)"
+      ],
+      "decision_criteria": [
+        "Does this protect the vulnerable from exploitation?",
+        "Does this address systemic corruption, not just individuals?",
+        "Does this ensure fair access for all?",
+        "Does this disrupt systems that cause harm?",
+        "Does this create consequences that protect, not just punish?"
+      ],
+      "counterfeits": [
+        "Vengeance disguised as justice",
+        "Oppression of the innocent to protect the powerful",
+        "Justice for some but not all",
+        "Systems designed to exclude rather than protect",
+        "Punishment without opportunity for restoration"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Justice protects; Mercy heals. Both are required.",
+      "category": "action"
+    },
+    {
+      "id": 8,
+      "name": "SERVICE",
+      "definition": "Leading by serving. Using authority, resources, and capabilities to meet others' needs rather than your own. True leadership empowers others rather than accumulating power.",
+      "scripture_anchors": [
+        "For even the Son of Man did not come to be served, but to serve, and to give his life as a ransom for many. (Mark 10:45)",
+        "Washing the Disciples' Feet (John 13:1-17)"
+      ],
+      "decision_criteria": [
+        "Does this use power to serve or to be served?",
+        "Does this empower others or build dependency?",
+        "Is this genuine service or self-promotion?",
+        "Does this serve without expectation of recognition?",
+        "Does this cross social boundaries to serve the marginalized?"
+      ],
+      "counterfeits": [
+        "Self-promotion disguised as service",
+        "Service that creates dependency rather than empowerment",
+        "Serving only those who can reciprocate",
+        "Resume-padding (serving to be seen)",
+        "Service with strings attached"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Service demonstrates Love in tangible form.",
+      "category": "action"
+    },
+    {
+      "id": 9,
+      "name": "TRUTH",
+      "definition": "Speaking reality in love. Combating misinformation and deception while maintaining compassion. Truth that sets free, not weaponized honesty that destroys.",
+      "scripture_anchors": [
+        "Then you will know the truth, and the truth will set you free. (John 8:32)",
+        "For this I was born, and for this I came into the world, to testify to the truth. (John 18:37)"
+      ],
+      "decision_criteria": [
+        "Is this accurate and verifiable?",
+        "Is truth delivered with compassion?",
+        "Does this combat deception without causing unnecessary harm?",
+        "Does this serve liberation or destruction?",
+        "Is this the whole truth, not selective truth that misleads?"
+      ],
+      "counterfeits": [
+        "Truth without love (weaponized honesty)",
+        "Propaganda disguised as truth",
+        "Selective truth that misleads",
+        "Lies claiming to serve a greater good",
+        "\"Alternative facts\" and misinformation"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Truth enables authentic relationship; deception destroys it.",
+      "category": "character"
+    },
+    {
+      "id": 10,
+      "name": "HUMILITY",
+      "definition": "Recognizing our limits and maintaining teachability. Acknowledging wrongs and working toward genuine reconciliation. The opposite of pride that refuses correction.",
+      "scripture_anchors": [
+        "For all those who exalt themselves will be humbled, and those who humble themselves will be exalted. (Luke 14:11)",
+        "Blessing the Children (Mark 10:13-16)"
+      ],
+      "decision_criteria": [
+        "Does this acknowledge limitations honestly?",
+        "Is this open to correction and growth?",
+        "Does this give credit appropriately?",
+        "Does this acknowledge historical/personal wrongs?",
+        "Does this approach others as having valuable perspective?"
+      ],
+      "counterfeits": [
+        "False humility (performing meekness while seeking praise)",
+        "Self-deprecation that manipulates",
+        "Pride disguised as confidence",
+        "Inability to receive correction",
+        "Humility that becomes passivity in face of injustice"
+      ],
+      "sub_tenets": ["Cleanliness: Moral purity and integrity; internal consistency between values and actions"],
+      "transformation_pattern": "Humility enables learning; pride blocks it.",
+      "category": "character"
+    },
+    {
+      "id": 11,
+      "name": "FAITH",
+      "definition": "Trusting despite uncertainty. Maintaining hope and working for positive change even when faced with seemingly insurmountable challenges. Active commitment, not passive belief.",
+      "scripture_anchors": [
+        "If you have faith as small as a mustard seed... Nothing will be impossible for you. (Matthew 17:20)",
+        "The Centurion's Servant (Matthew 8:5-13)"
+      ],
+      "decision_criteria": [
+        "Does this maintain hope in the face of difficulty?",
+        "Is this faith that produces action?",
+        "Does this trust while still using wisdom?",
+        "Does this persist despite setbacks?",
+        "Is this authentic trust or manufactured certainty?"
+      ],
+      "counterfeits": [
+        "Faith that refuses to act (waiting for miracles instead of working)",
+        "Manufactured certainty that cannot tolerate questions",
+        "\"Faith\" that ignores evidence and wisdom",
+        "Blind faith that enables manipulation",
+        "Faith weaponized against doubt and honest questioning"
+      ],
+      "sub_tenets": ["Loyalty: Faithful commitment to principles and people through difficulty"],
+      "transformation_pattern": "Faith sustains action when outcomes are uncertain.",
+      "category": "character"
+    },
+    {
+      "id": 12,
+      "name": "HOPE",
+      "definition": "Believing in better futures and working toward them. Maintaining positive expectation while doing the practical work required. Not naive optimism, but grounded confidence that change is possible.",
+      "scripture_anchors": [
+        "In this world you will have trouble. But take heart! I have overcome the world. (John 16:33)",
+        "The Road to Emmaus (Luke 24:13-35)"
+      ],
+      "decision_criteria": [
+        "Does this maintain vision for positive change?",
+        "Is this hope paired with practical action?",
+        "Does this create possibility where despair would surrender?",
+        "Does this inspire others toward better futures?",
+        "Is this grounded hope or denial of difficulty?"
+      ],
+      "counterfeits": [
+        "Naive optimism that ignores real problems",
+        "Hope without action (waiting for change without working for it)",
+        "False hope that manipulates (prosperity gospel promises)",
+        "Despair disguised as realism",
+        "Hope that denies legitimate grief"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Hope sustains long-term commitment to difficult work.",
+      "category": "character"
+    },
+    {
+      "id": 13,
+      "name": "SACRIFICE",
+      "definition": "Giving up privilege, comfort, or resources for others' benefit. Willingness to bear cost for the good of others. Self-giving that paradoxically expands rather than diminishes the self.",
+      "scripture_anchors": [
+        "Greater love has no one than this: to lay down one's life for one's friends. (John 15:13)",
+        "The Rich Young Ruler (Mark 10:17-22)"
+      ],
+      "decision_criteria": [
+        "Is this genuine sacrifice or performative giving?",
+        "Does this sacrifice create benefit for others?",
+        "Is this freely chosen, not coerced?",
+        "Does this sacrifice privilege for equity?",
+        "Is this sustainable sacrifice or self-destruction?"
+      ],
+      "counterfeits": [
+        "Martyrdom complex (sacrifice for attention)",
+        "Sacrifice that enables continued harm",
+        "Forced sacrifice imposed on the vulnerable",
+        "Sacrifice that creates guilt in recipients",
+        "Self-destruction disguised as sacrifice"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Love motivates Sacrifice; Sacrifice proves Love is genuine.",
+      "category": "action"
+    },
+    {
+      "id": 14,
+      "name": "UNITY",
+      "definition": "Building bridges across divisions while maintaining commitment to truth and justice. Creating coalitions around shared values. Unity in essentials, diversity in non-essentials.",
+      "scripture_anchors": [
+        "That they may be one as we are one. (John 17:11)",
+        "The High Priestly Prayer (John 17:20-23)"
+      ],
+      "decision_criteria": [
+        "Does this build bridges across legitimate differences?",
+        "Does this seek common ground without compromising core principles?",
+        "Does this unite around shared values?",
+        "Does this honor diversity while building community?",
+        "Is this authentic unity or forced uniformity?"
+      ],
+      "counterfeits": [
+        "Forced uniformity (everyone must think alike)",
+        "Unity that silences legitimate dissent",
+        "Division disguised as principled stand",
+        "Unity that excludes the marginalized",
+        "Tribalism claiming to be unity"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Unity multiplies effectiveness of all other tenets.",
+      "category": "community"
+    },
+    {
+      "id": 15,
+      "name": "GENEROSITY",
+      "definition": "Giving from abundance (and from scarcity) to meet others' needs. Living simply so others can simply live. Recognizing resources as tools for service, not ends in themselves.",
+      "scripture_anchors": [
+        "Give to everyone who asks you, and if anyone takes what belongs to you, do not demand it back. (Luke 6:30)",
+        "The Widow's Offering (Mark 12:41-44)"
+      ],
+      "decision_criteria": [
+        "Does this give to meet genuine need?",
+        "Is this generosity proportional to capacity?",
+        "Does this recognize the widow's mite principle (sacrifice matters more than amount)?",
+        "Does this give without expectation of return?",
+        "Is this sustainable generosity or enabling?"
+      ],
+      "counterfeits": [
+        "Generosity for recognition (giving to be seen)",
+        "Giving that creates dependency",
+        "Generosity with strings attached",
+        "Wealth accumulation disguised as stewardship",
+        "Stinginess disguised as wisdom"
+      ],
+      "sub_tenets": ["Thrift: Living simply to have more to share; avoiding waste; responsible resource management"],
+      "transformation_pattern": "Generosity flows from recognizing all resources as entrusted for service.",
+      "category": "community"
+    },
+    {
+      "id": 16,
+      "name": "WISDOM",
+      "definition": "Choosing truth over tribalism. Making decisions based on careful discernment and moral principles rather than party loyalty, emotion, or propaganda. Applying knowledge with good judgment.",
+      "scripture_anchors": [
+        "Therefore everyone who hears these words of mine and puts them into practice is like a wise man who built his house on the rock. (Matthew 7:24)",
+        "The Question About Taxes (Matthew 22:15-22)"
+      ],
+      "decision_criteria": [
+        "Is this decision based on careful discernment?",
+        "Does this transcend tribal thinking?",
+        "Does this apply principles consistently?",
+        "Does this consider long-term consequences?",
+        "Is this wisdom in service of love and justice?"
+      ],
+      "counterfeits": [
+        "Cleverness without ethics",
+        "Tribal loyalty disguised as principle",
+        "Emotional reaction presented as wisdom",
+        "Wisdom that serves self-interest",
+        "Paralysis by analysis (never acting)"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Wisdom guides application of all other tenets.",
+      "category": "character"
+    },
+    {
+      "id": 17,
+      "name": "GRACE",
+      "definition": "Offering undeserved favor. Extending acceptance before performance. Creating space for transformation by providing what people need rather than what they've earned.",
+      "scripture_anchors": [
+        "For the law was given through Moses; grace and truth came through Jesus Christ. (John 1:17)",
+        "The Sinful Woman Who Anointed Jesus (Luke 7:36-50)"
+      ],
+      "decision_criteria": [
+        "Does this offer acceptance before performance?",
+        "Does this create space for transformation?",
+        "Does this extend what is needed, not just earned?",
+        "Does this balance grace with truth?",
+        "Is this grace that empowers or enables?"
+      ],
+      "counterfeits": [
+        "Cheap grace (acceptance without transformation)",
+        "Grace without truth (enabling harm)",
+        "Conditional grace (earned acceptance)",
+        "Grace that ignores justice",
+        "Performance-based acceptance disguised as grace"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Grace creates the safety for Repentance; Law alone produces shame.",
+      "category": "restoration"
+    },
+    {
+      "id": 18,
+      "name": "RIGHTEOUSNESS",
+      "definition": "Standing against corruption, injustice, and harm even when personally costly. Moral courage to do what's right regardless of consequences. Integrity in action.",
+      "scripture_anchors": [
+        "Seek first his kingdom and his righteousness, and all these things will be given to you as well. (Matthew 6:33)",
+        "Confronting the Pharisees (Matthew 23:23-24)"
+      ],
+      "decision_criteria": [
+        "Does this stand against corruption regardless of cost?",
+        "Is this consistent application of moral principle?",
+        "Does this challenge powerful wrongdoers, not just easy targets?",
+        "Is this righteousness in service of love?",
+        "Does this avoid self-righteousness while pursuing righteousness?"
+      ],
+      "counterfeits": [
+        "Self-righteousness (pride in moral standing)",
+        "Selective righteousness (principles applied inconsistently)",
+        "Righteousness without mercy",
+        "Performative moral outrage",
+        "Using righteousness to condemn rather than restore"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Righteousness channels Love into confrontation with evil.",
+      "category": "character"
+    },
+    {
+      "id": 19,
+      "name": "FELLOWSHIP",
+      "definition": "Creating inclusive community that bridges divisions. Genuine relationship-building across racial, economic, political, and social boundaries. Authentic connection, not networking.",
+      "scripture_anchors": [
+        "For where two or three gather in my name, there am I with them. (Matthew 18:20)",
+        "Eating with Tax Collectors and Sinners (Mark 2:13-17)"
+      ],
+      "decision_criteria": [
+        "Does this create genuine connection across differences?",
+        "Does this include the marginalized?",
+        "Is this authentic relationship or strategic networking?",
+        "Does this build community or just audiences?",
+        "Does this cross social boundaries that others won't cross?"
+      ],
+      "counterfeits": [
+        "Networking disguised as fellowship",
+        "Fellowship that excludes the \"wrong\" people",
+        "Superficial community without vulnerability",
+        "Fellowship as means to other ends",
+        "Exclusive clubs claiming to be community"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Fellowship provides the context where all other tenets are practiced.",
+      "category": "community"
+    },
+    {
+      "id": 20,
+      "name": "DISCIPLESHIP",
+      "definition": "Teaching others to serve and engage. Mentoring the next generation in moral leadership and civic responsibility. Reproducing servant-leaders, not just followers.",
+      "scripture_anchors": [
+        "Therefore go and make disciples of all nations...teaching them to obey everything I have commanded you. (Matthew 28:19-20)",
+        "The Call of the First Disciples (Mark 1:16-20)"
+      ],
+      "decision_criteria": [
+        "Does this develop others' capacity for service?",
+        "Does this create leaders, not just followers?",
+        "Does this pass on principles, not just information?",
+        "Does this empower independent moral reasoning?",
+        "Is this multiplication, not just addition?"
+      ],
+      "counterfeits": [
+        "Creating dependence instead of developing leaders",
+        "Indoctrination rather than formation",
+        "Building followers of self instead of principles",
+        "Discipleship that produces clones, not mature individuals",
+        "Teaching information without transformation"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Discipleship multiplies all other tenets across generations.",
+      "category": "community"
+    },
+    {
+      "id": 21,
+      "name": "REPENTANCE",
+      "definition": "Acknowledging wrongs and actively working to correct them. Genuine change of direction, not just regret or apology. Taking responsibility and making amends.",
+      "scripture_anchors": [
+        "Repent, for the kingdom of heaven has come near. (Matthew 4:17)",
+        "Zacchaeus the Tax Collector (Luke 19:1-10)"
+      ],
+      "decision_criteria": [
+        "Does this acknowledge specific wrongs?",
+        "Does this include concrete steps toward change?",
+        "Does this make amends where possible?",
+        "Is this genuine change or manipulation?",
+        "Does this take responsibility without excuse?"
+      ],
+      "counterfeits": [
+        "Apology without change",
+        "Regret without responsibility",
+        "Confession as manipulation technique",
+        "Repentance performed for audience",
+        "Using repentance to avoid consequences without transformation"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "REPENTANCE → FORGIVENESS → REDEMPTION",
+      "category": "restoration"
+    },
+    {
+      "id": 22,
+      "name": "REDEMPTION",
+      "definition": "Creating genuine second chances. Transforming past harm into future contribution. Restoring people to full participation in community after accountability is satisfied.",
+      "scripture_anchors": [
+        "Feed my sheep. (John 21:15-19)",
+        "The Parable of the Lost Son (Luke 15:11-32)"
+      ],
+      "decision_criteria": [
+        "Does this create genuine pathway to restoration?",
+        "Does this transform past harm into future contribution?",
+        "Does this restore full participation after accountability?",
+        "Is this redemption that protects community while restoring individual?",
+        "Does this believe in people's capacity for change?"
+      ],
+      "counterfeits": [
+        "Redemption without accountability",
+        "Permanent punishment with no path to restoration",
+        "Cheap redemption that ignores victims",
+        "Redemption theater (appearance without substance)",
+        "Using redemption language while maintaining exclusion"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "REPENTANCE → FORGIVENESS → REDEMPTION",
+      "category": "restoration"
+    },
+    {
+      "id": 23,
+      "name": "FAITHFULNESS",
+      "definition": "Staying true through trials. Consistent commitment to principles and people over time. Reliability that others can count on. Environmental stewardship as faithfulness to creation.",
+      "scripture_anchors": [
+        "Yet not my will but yours be done. (Luke 22:42)",
+        "Well done, good and faithful servant. (Matthew 25:21)"
+      ],
+      "decision_criteria": [
+        "Does this demonstrate consistency over time?",
+        "Is this commitment maintained through difficulty?",
+        "Does this honor long-term obligations?",
+        "Is this faithful stewardship of resources and creation?",
+        "Does this remain true to principles under pressure?"
+      ],
+      "counterfeits": [
+        "Faithfulness to wrong things",
+        "Stubbornness disguised as faithfulness",
+        "Faithfulness that ignores needed change",
+        "Selective faithfulness (reliable only when convenient)",
+        "Faithfulness to institution over principles"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Faithfulness sustains all other tenets over time.",
+      "category": "character"
+    },
+    {
+      "id": 24,
+      "name": "JOY",
+      "definition": "Finding gladness in service and maintaining positive spirit even in suffering. Not superficial happiness, but deep satisfaction in meaningful contribution. Joy as witness to transformation.",
+      "scripture_anchors": [
+        "I have told you this so that my joy may be in you and that your joy may be complete. (John 15:11)"
+      ],
+      "decision_criteria": [
+        "Does this cultivate genuine gladness in service?",
+        "Is this joy sustainable through difficulty?",
+        "Does this joy attract others toward good?",
+        "Is this deep satisfaction or superficial happiness?",
+        "Does this joy come from meaning, not circumstances?"
+      ],
+      "counterfeits": [
+        "Forced cheerfulness (performing happiness)",
+        "Joy at others' expense",
+        "Superficial happiness that denies legitimate grief",
+        "Using \"joy\" to shame those who struggle",
+        "Escapist happiness that avoids responsibility"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Joy sustains servant work and attracts others to the path.",
+      "category": "character"
+    },
+    {
+      "id": 25,
+      "name": "DIGNITY",
+      "definition": "Restoring worth to the shamed and marginalized. Treating all people as having inherent value. Fighting dehumanizing systems and creating spaces where the discarded can reclaim voice and value.",
+      "scripture_anchors": [
+        "She has done a beautiful thing to me. (Mark 14:6)",
+        "The Woman at the Well (John 4:4-26)"
+      ],
+      "decision_criteria": [
+        "Does this restore worth to those who've been shamed?",
+        "Does this treat all people as having inherent value?",
+        "Does this fight dehumanizing systems?",
+        "Does this create space for the marginalized to reclaim voice?",
+        "Does this honor rather than exploit vulnerability?"
+      ],
+      "counterfeits": [
+        "Dignity for some but not all",
+        "Conditional dignity (earned through performance)",
+        "Using dignity language while practicing exclusion",
+        "Paternalism disguised as honoring dignity",
+        "Dignity that depends on social status"
+      ],
+      "sub_tenets": null,
+      "transformation_pattern": "Dignity is the opposite of shame; restoring dignity breaks shame cycles.",
+      "category": "restoration"
+    }
+  ]
+}
