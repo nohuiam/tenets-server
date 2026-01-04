@@ -80,8 +80,8 @@ export function createInterLockMesh(db, evaluator, port) {
     // Handle incoming messages
     socket.on('message', (msg, rinfo) => {
         const signal = decode(msg);
+        // Silently ignore invalid/incompatible signals from other servers
         if (!signal) {
-            console.error(`[tenets-server] Invalid signal from ${rinfo.address}:${rinfo.port}`);
             stats.dropped++;
             return;
         }
@@ -94,8 +94,8 @@ export function createInterLockMesh(db, evaluator, port) {
                 break;
             }
         }
+        // Silently ignore non-whitelisted signals
         if (!isWhitelisted(signal.name)) {
-            console.error(`[tenets-server] Signal ${signal.name} not whitelisted, ignoring`);
             stats.dropped++;
             return;
         }

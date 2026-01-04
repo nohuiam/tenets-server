@@ -127,8 +127,8 @@ export function createInterLockMesh(
   socket.on('message', (msg: Buffer, rinfo: dgram.RemoteInfo) => {
     const signal = decode(msg);
 
+    // Silently ignore invalid/incompatible signals from other servers
     if (!signal) {
-      console.error(`[tenets-server] Invalid signal from ${rinfo.address}:${rinfo.port}`);
       stats.dropped++;
       return;
     }
@@ -144,8 +144,8 @@ export function createInterLockMesh(
       }
     }
 
+    // Silently ignore non-whitelisted signals
     if (!isWhitelisted(signal.name)) {
-      console.error(`[tenets-server] Signal ${signal.name} not whitelisted, ignoring`);
       stats.dropped++;
       return;
     }
