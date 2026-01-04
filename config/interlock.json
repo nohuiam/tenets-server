@@ -28,7 +28,10 @@
     { "name": "consciousness", "port": 3028 },
     { "name": "experience-layer", "port": 3031 },
     { "name": "skill-builder", "port": 3029 },
-    { "name": "context-guardian", "port": 3001 }
+    { "name": "percolation-server", "port": 3030 },
+    { "name": "verifier-mcp", "port": 3021 },
+    { "name": "context-guardian", "port": 3001 },
+    { "name": "trinity-coordinator", "port": 3012 }
   ],
   "whitelist": [
     "DECISION_PENDING",
