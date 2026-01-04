@@ -8,6 +8,7 @@ import type { Server } from 'http';
 import type { DatabaseManager } from '../database/schema.js';
 import type { Evaluator } from '../services/evaluator.js';
 import type { CounterfeitDetector } from '../services/counterfeit-detector.js';
+import { getInterLock } from '../interlock/index.js';
 
 export function createHttpServer(
   db: DatabaseManager,
@@ -43,6 +44,25 @@ export function createHttpServer(
     try {
       const stats = db.getStats();
       res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
+  // InterLock stats
+  app.get('/api/interlock/stats', (_req: Request, res: Response) => {
+    try {
+      const interlock = getInterLock();
+      if (!interlock) {
+        res.status(503).json({ error: 'InterLock not active' });
+        return;
+      }
+
+      res.json({
+        socket: interlock.getStats(),
+        tumbler: interlock.getTumblerStats(),
+        peers: interlock.getPeers(),
+      });
     } catch (error) {
       res.status(500).json({ error: String(error) });
     }

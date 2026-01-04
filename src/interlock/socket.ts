@@ -11,7 +11,7 @@ import type { DatabaseManager } from '../database/schema.js';
 import type { Evaluator } from '../services/evaluator.js';
 import { encode, decode, type Signal } from './protocol.js';
 import { handleSignal, type HandlerContext } from './handlers.js';
-import { isWhitelisted } from './tumbler.js';
+import { isWhitelisted, getWhitelist, getTumblerStats } from './tumbler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,17 +20,44 @@ interface Peer {
   name: string;
   port: number;
   address?: string;
+  lastSeen?: number;
+  status?: 'active' | 'inactive' | 'unknown';
 }
 
 interface InterlockConfig {
   peers: Peer[];
 }
 
+export interface InterlockStats {
+  sent: number;
+  received: number;
+  dropped: number;
+  peers: number;
+  uptime: number;
+}
+
 export interface InterLockMesh {
   socket: dgram.Socket;
   emit: (signal: Signal) => void;
   close: () => void;
+  getStats: () => InterlockStats;
+  getTumblerStats: () => { accepted: number; rejected: number; whitelist: string[] };
+  getPeers: () => Peer[];
 }
+
+// Module-level stats
+const stats = {
+  sent: 0,
+  received: 0,
+  dropped: 0,
+  startTime: Date.now(),
+};
+
+// Module-level peers map
+let peersMap: Map<string, Peer> = new Map();
+
+// Module-level instance for singleton pattern
+let interlockInstance: InterLockMesh | null = null;
 
 /**
  * Load peer configuration
@@ -56,10 +83,21 @@ export function createInterLockMesh(
   const socket = dgram.createSocket('udp4');
   const peers = loadPeers();
 
+  // Initialize peers map
+  peersMap = new Map();
+  for (const peer of peers) {
+    peersMap.set(peer.name, {
+      ...peer,
+      status: 'unknown',
+      lastSeen: 0,
+    });
+  }
+
   // Emit function to broadcast to peers
   function emit(signal: Signal): void {
     if (!isWhitelisted(signal.name)) {
       console.error(`[tenets-server] Signal ${signal.name} not whitelisted, not emitting`);
+      stats.dropped++;
       return;
     }
 
@@ -70,6 +108,9 @@ export function createInterLockMesh(
       socket.send(buffer, 0, buffer.length, peer.port, address, (err) => {
         if (err) {
           console.error(`[tenets-server] Error sending to ${peer.name}:`, err.message);
+          stats.dropped++;
+        } else {
+          stats.sent++;
         }
       });
     }
@@ -88,11 +129,24 @@ export function createInterLockMesh(
 
     if (!signal) {
       console.error(`[tenets-server] Invalid signal from ${rinfo.address}:${rinfo.port}`);
+      stats.dropped++;
       return;
+    }
+
+    stats.received++;
+
+    // Update peer status if we know this sender
+    for (const [name, peer] of peersMap) {
+      if (peer.port === rinfo.port) {
+        peer.lastSeen = Date.now();
+        peer.status = 'active';
+        break;
+      }
     }
 
     if (!isWhitelisted(signal.name)) {
       console.error(`[tenets-server] Signal ${signal.name} not whitelisted, ignoring`);
+      stats.dropped++;
       return;
     }
 
@@ -111,11 +165,31 @@ export function createInterLockMesh(
   // Bind to port
   socket.bind(port);
 
-  return {
+  const mesh: InterLockMesh = {
     socket,
     emit,
     close: () => {
       socket.close();
+      interlockInstance = null;
     },
+    getStats: () => ({
+      sent: stats.sent,
+      received: stats.received,
+      dropped: stats.dropped,
+      peers: peersMap.size,
+      uptime: Date.now() - stats.startTime,
+    }),
+    getTumblerStats: () => getTumblerStats(),
+    getPeers: () => Array.from(peersMap.values()),
   };
+
+  interlockInstance = mesh;
+  return mesh;
+}
+
+/**
+ * Get the current InterLock instance
+ */
+export function getInterLock(): InterLockMesh | null {
+  return interlockInstance;
 }

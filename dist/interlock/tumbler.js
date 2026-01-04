@@ -7,6 +7,11 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 let whitelist = null;
+// Track tumbler statistics
+const tumblerStats = {
+    accepted: 0,
+    rejected: 0,
+};
 /**
  * Load whitelist from config
  */
@@ -38,11 +43,28 @@ function loadWhitelist() {
  * Check if a signal name is whitelisted
  */
 export function isWhitelisted(signalName) {
-    return loadWhitelist().has(signalName);
+    const allowed = loadWhitelist().has(signalName);
+    if (allowed) {
+        tumblerStats.accepted++;
+    }
+    else {
+        tumblerStats.rejected++;
+    }
+    return allowed;
 }
 /**
  * Get the whitelist
  */
 export function getWhitelist() {
     return Array.from(loadWhitelist());
+}
+/**
+ * Get tumbler statistics
+ */
+export function getTumblerStats() {
+    return {
+        accepted: tumblerStats.accepted,
+        rejected: tumblerStats.rejected,
+        whitelist: getWhitelist(),
+    };
 }

@@ -15,6 +15,12 @@ interface InterlockConfig {
 
 let whitelist: Set<string> | null = null;
 
+// Track tumbler statistics
+const tumblerStats = {
+  accepted: 0,
+  rejected: 0,
+};
+
 /**
  * Load whitelist from config
  */
@@ -47,7 +53,13 @@ function loadWhitelist(): Set<string> {
  * Check if a signal name is whitelisted
  */
 export function isWhitelisted(signalName: string): boolean {
-  return loadWhitelist().has(signalName);
+  const allowed = loadWhitelist().has(signalName);
+  if (allowed) {
+    tumblerStats.accepted++;
+  } else {
+    tumblerStats.rejected++;
+  }
+  return allowed;
 }
 
 /**
@@ -55,4 +67,15 @@ export function isWhitelisted(signalName: string): boolean {
  */
 export function getWhitelist(): string[] {
   return Array.from(loadWhitelist());
+}
+
+/**
+ * Get tumbler statistics
+ */
+export function getTumblerStats(): { accepted: number; rejected: number; whitelist: string[] } {
+  return {
+    accepted: tumblerStats.accepted,
+    rejected: tumblerStats.rejected,
+    whitelist: getWhitelist(),
+  };
 }

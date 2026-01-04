@@ -3,6 +3,7 @@
  * Port 8027
  */
 import express from 'express';
+import { getInterLock } from '../interlock/index.js';
 export function createHttpServer(db, evaluator, counterfeitDetector, port) {
     const app = express();
     // Middleware
@@ -28,6 +29,24 @@ export function createHttpServer(db, evaluator, counterfeitDetector, port) {
         try {
             const stats = db.getStats();
             res.json(stats);
+        }
+        catch (error) {
+            res.status(500).json({ error: String(error) });
+        }
+    });
+    // InterLock stats
+    app.get('/api/interlock/stats', (_req, res) => {
+        try {
+            const interlock = getInterLock();
+            if (!interlock) {
+                res.status(503).json({ error: 'InterLock not active' });
+                return;
+            }
+            res.json({
+                socket: interlock.getStats(),
+                tumbler: interlock.getTumblerStats(),
+                peers: interlock.getPeers(),
+            });
         }
         catch (error) {
             res.status(500).json({ error: String(error) });
