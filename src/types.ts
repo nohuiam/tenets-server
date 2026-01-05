@@ -214,11 +214,17 @@ export interface SuggestRemediationOutput {
 // =============================================================================
 
 export const SignalTypes = {
+  // Core signals (ecosystem aligned)
+  DOCK_REQUEST: 0x01,
+  DOCK_APPROVE: 0x02,
+  DOCK_REJECT: 0x03,
+  HEARTBEAT: 0x04,
+  DISCONNECT: 0x05,
+
   // Incoming signals
   DECISION_PENDING: 0xD0,
-  OPERATION_COMPLETE: 0xFF,
+  OPERATION_COMPLETE: 0xDF,  // Moved from 0xFF to avoid conflict
   LESSON_LEARNED: 0xE5,
-  HEARTBEAT: 0x00,
 
   // Outgoing signals
   TENET_VIOLATION: 0xB0,

@@ -156,7 +156,7 @@ function handleLessonLearned(signal: Signal, context: HandlerContext): void {
 }
 
 /**
- * Handle HEARTBEAT (0x00)
+ * Handle HEARTBEAT (0x04)
  * Track server health
  */
 function handleHeartbeat(_signal: Signal, _context: HandlerContext): void {

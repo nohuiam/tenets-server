@@ -78,9 +78,9 @@ export function decode(buffer: Buffer): Signal | null {
     const payloadStr = buffer.slice(12, 12 + payloadLength).toString('utf8');
     const payload = JSON.parse(payloadStr);
 
-    // Ensure payload has sender
+    // Ensure payload has sender (servers may send serverId instead)
     if (!payload.sender) {
-      payload.sender = 'unknown';
+      payload.sender = payload.serverId || payload.source || 'unknown';
     }
 
     return {

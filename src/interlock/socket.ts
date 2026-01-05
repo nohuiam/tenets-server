@@ -58,6 +58,42 @@ let peersMap: Map<string, Peer> = new Map();
 
 // Module-level instance for singleton pattern
 let interlockInstance: InterLockMesh | null = null;
+let heartbeatTimer: NodeJS.Timeout | null = null;
+const HEARTBEAT_INTERVAL = 30000; // 30 seconds
+const SERVER_NAME = 'tenets-server';
+const SIGNAL_TYPE_HEARTBEAT = 0x04;  // Ecosystem standard
+
+/**
+ * Start heartbeat broadcasting
+ */
+function startHeartbeat(socket: dgram.Socket, peers: Peer[]): void {
+  if (heartbeatTimer) {
+    clearInterval(heartbeatTimer);
+  }
+
+  const sendHeartbeat = () => {
+    const buffer = encode(SIGNAL_TYPE_HEARTBEAT, SERVER_NAME, {
+      status: 'alive',
+      uptime: process.uptime()
+    });
+
+    for (const peer of peers) {
+      const address = peer.address || '127.0.0.1';
+      socket.send(buffer, 0, buffer.length, peer.port, address, (err) => {
+        if (err) {
+          console.error(`[tenets-server] Heartbeat error to ${peer.name}:`, err.message);
+        } else {
+          stats.sent++;
+        }
+      });
+    }
+  };
+
+  heartbeatTimer = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL);
+
+  // Send initial heartbeat immediately
+  sendHeartbeat();
+}
 
 /**
  * Load peer configuration
@@ -162,6 +198,7 @@ export function createInterLockMesh(
   socket.on('listening', () => {
     const addr = socket.address();
     console.error(`[tenets-server] InterLock mesh listening on ${addr.address}:${addr.port}`);
+    startHeartbeat(socket, peers);
   });
 
   // Bind to port
@@ -171,6 +208,10 @@ export function createInterLockMesh(
     socket,
     emit,
     close: () => {
+      if (heartbeatTimer) {
+        clearInterval(heartbeatTimer);
+        heartbeatTimer = null;
+      }
       socket.close();
       interlockInstance = null;
     },
