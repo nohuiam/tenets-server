@@ -5,10 +5,65 @@
 
 import express, { Request, Response, NextFunction } from 'express';
 import type { Server } from 'http';
+import { z } from 'zod';
 import type { DatabaseManager } from '../database/schema.js';
 import type { Evaluator } from '../services/evaluator.js';
 import type { CounterfeitDetector } from '../services/counterfeit-detector.js';
 import { getInterLock } from '../interlock/index.js';
+
+// SECURITY: API key for HTTP authentication
+const API_KEY = process.env.TENETS_API_KEY;
+
+// Input validation schemas
+const EvaluateSchema = z.object({
+  decision_text: z.string().min(1).max(50000),
+  context: z.record(z.unknown()).optional(),
+  stakeholders: z.array(z.string().max(200)).max(20).optional(),
+  depth: z.enum(['quick', 'standard', 'deep']).optional()
+});
+
+const CheckCounterfeitSchema = z.object({
+  action_description: z.string().min(1).max(10000),
+  claimed_tenet: z.string().max(100).optional()
+});
+
+const BlindSpotsSchema = z.object({
+  plan_text: z.string().min(1).max(100000),
+  scope: z.string().max(1000).optional()
+});
+
+const RemediationSchema = z.object({
+  violation_description: z.string().min(1).max(10000),
+  tenet_violated: z.string().min(1).max(100),
+  context: z.string().max(10000).optional()
+});
+
+/**
+ * SECURITY: Sanitize error messages to prevent information disclosure
+ */
+function sanitizeError(error: unknown): string {
+  if (error instanceof z.ZodError) {
+    return 'Invalid input: ' + error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+  }
+
+  const message = error instanceof Error ? error.message : 'Unknown error';
+
+  // Strip sensitive patterns
+  const sensitivePatterns = [
+    /\/Users\/[^/\s]+/g,           // User paths
+    /\/home\/[^/\s]+/g,            // Linux home paths
+    /at\s+.+:\d+:\d+/g,            // Stack trace lines
+    /SQLITE_\w+/g,                 // SQLite error codes
+    /ENOENT:|EACCES:/g,            // System error codes
+  ];
+
+  let sanitized = message;
+  for (const pattern of sensitivePatterns) {
+    sanitized = sanitized.replace(pattern, '[REDACTED]');
+  }
+
+  return sanitized;
+}
 
 export function createHttpServer(
   db: DatabaseManager,
@@ -18,14 +73,34 @@ export function createHttpServer(
 ): Server {
   const app = express();
 
-  // Middleware
-  app.use(express.json());
+  // Middleware - SECURITY: Limit body size to 1MB
+  app.use(express.json({ limit: '1mb' }));
 
-  // CORS
+  // CORS - TODO: Consider restricting origins in production
   app.use((_req: Request, res: Response, next: NextFunction) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
+    if (_req.method === 'OPTIONS') {
+      res.sendStatus(200);
+      return;
+    }
+    next();
+  });
+
+  // SECURITY: API key authentication for all /api/* routes
+  app.use('/api', (req: Request, res: Response, next: NextFunction) => {
+    // Skip auth if no API key is configured (development mode)
+    if (!API_KEY) {
+      next();
+      return;
+    }
+
+    const providedKey = req.headers['x-api-key'] as string;
+    if (!providedKey || providedKey !== API_KEY) {
+      res.status(401).json({ error: 'Unauthorized: Invalid or missing API key' });
+      return;
+    }
     next();
   });
 
@@ -45,7 +120,7 @@ export function createHttpServer(
       const stats = db.getStats();
       res.json(stats);
     } catch (error) {
-      res.status(500).json({ error: String(error) });
+      res.status(500).json({ error: sanitizeError(error) });
     }
   });
 
@@ -64,7 +139,7 @@ export function createHttpServer(
         peers: interlock.getPeers(),
       });
     } catch (error) {
-      res.status(500).json({ error: String(error) });
+      res.status(500).json({ error: sanitizeError(error) });
     }
   });
 
@@ -74,7 +149,7 @@ export function createHttpServer(
       const tenets = db.getAllTenets();
       res.json({ tenets, count: tenets.length });
     } catch (error) {
-      res.status(500).json({ error: String(error) });
+      res.status(500).json({ error: sanitizeError(error) });
     }
   });
 
@@ -89,34 +164,37 @@ export function createHttpServer(
       }
       res.json(tenet);
     } catch (error) {
-      res.status(500).json({ error: String(error) });
+      res.status(500).json({ error: sanitizeError(error) });
     }
   });
 
   // Get tenets by category
   app.get('/api/tenets/category/:category', (req: Request, res: Response) => {
     try {
-      const category = req.params.category as 'foundation' | 'action' | 'character' | 'community' | 'restoration';
+      // SECURITY: Validate category parameter
+      const validCategories = ['foundation', 'action', 'character', 'community', 'restoration'] as const;
+      const category = req.params.category as typeof validCategories[number];
+      if (!validCategories.includes(category)) {
+        res.status(400).json({ error: 'Invalid category' });
+        return;
+      }
       const tenets = db.getTenetsByCategory(category);
       res.json({ tenets, count: tenets.length, category });
     } catch (error) {
-      res.status(500).json({ error: String(error) });
+      res.status(500).json({ error: sanitizeError(error) });
     }
   });
 
   // Evaluate a decision
   app.post('/api/evaluate', (req: Request, res: Response) => {
     try {
-      const { decision_text, context, stakeholders, depth } = req.body;
-      if (!decision_text) {
-        res.status(400).json({ error: 'decision_text is required' });
-        return;
-      }
+      // SECURITY: Validate input with Zod schema
+      const validated = EvaluateSchema.parse(req.body);
 
-      const evaluation = evaluator.evaluate(decision_text, {
-        context,
-        stakeholders,
-        depth,
+      const evaluation = evaluator.evaluate(validated.decision_text, {
+        context: validated.context,
+        stakeholders: validated.stakeholders,
+        depth: validated.depth,
       });
 
       res.json({
@@ -128,38 +206,34 @@ export function createHttpServer(
         recommendations: evaluation.recommendations,
       });
     } catch (error) {
-      res.status(500).json({ error: String(error) });
+      const status = error instanceof z.ZodError ? 400 : 500;
+      res.status(status).json({ error: sanitizeError(error) });
     }
   });
 
   // Check for counterfeit patterns
   app.post('/api/check-counterfeit', (req: Request, res: Response) => {
     try {
-      const { action_description, claimed_tenet } = req.body;
-      if (!action_description) {
-        res.status(400).json({ error: 'action_description is required' });
-        return;
-      }
+      // SECURITY: Validate input with Zod schema
+      const validated = CheckCounterfeitSchema.parse(req.body);
 
-      const result = counterfeitDetector.check(action_description, claimed_tenet);
+      const result = counterfeitDetector.check(validated.action_description, validated.claimed_tenet);
       res.json(result);
     } catch (error) {
-      res.status(500).json({ error: String(error) });
+      const status = error instanceof z.ZodError ? 400 : 500;
+      res.status(status).json({ error: sanitizeError(error) });
     }
   });
 
   // Identify blind spots
   app.post('/api/blind-spots', (req: Request, res: Response) => {
     try {
-      const { plan_text, scope } = req.body;
-      if (!plan_text) {
-        res.status(400).json({ error: 'plan_text is required' });
-        return;
-      }
+      // SECURITY: Validate input with Zod schema
+      const validated = BlindSpotsSchema.parse(req.body);
 
       // Simplified blind spot detection for HTTP API
       const tenets = db.getAllTenets();
-      const textLower = plan_text.toLowerCase();
+      const textLower = validated.plan_text.toLowerCase();
 
       const blindSpots: { area: string; description: string; severity: string }[] = [];
 
@@ -184,42 +258,61 @@ export function createHttpServer(
           : ['Plan appears comprehensive'],
       });
     } catch (error) {
-      res.status(500).json({ error: String(error) });
+      const status = error instanceof z.ZodError ? 400 : 500;
+      res.status(status).json({ error: sanitizeError(error) });
     }
   });
 
   // List evaluations
   app.get('/api/evaluations', (req: Request, res: Response) => {
     try {
-      const limit = parseInt(req.query.limit as string, 10) || 50;
-      const assessment = req.query.assessment as 'affirm' | 'caution' | 'reject' | undefined;
+      // SECURITY: Validate query parameters
+      const limit = Math.min(parseInt(req.query.limit as string, 10) || 50, 1000);
+      const validAssessments = ['affirm', 'caution', 'reject'] as const;
+      const assessmentParam = req.query.assessment as string | undefined;
+      const assessment = assessmentParam && validAssessments.includes(assessmentParam as typeof validAssessments[number])
+        ? assessmentParam as typeof validAssessments[number]
+        : undefined;
 
       const evaluations = db.getEvaluations({ assessment, limit });
       res.json({ evaluations, count: evaluations.length });
     } catch (error) {
-      res.status(500).json({ error: String(error) });
+      res.status(500).json({ error: sanitizeError(error) });
     }
   });
 
   // Get specific evaluation
   app.get('/api/evaluations/:id', (req: Request, res: Response) => {
     try {
-      const evaluation = db.getEvaluationById(req.params.id);
+      // SECURITY: Basic ID validation
+      const id = req.params.id;
+      if (!id || id.length > 100) {
+        res.status(400).json({ error: 'Invalid evaluation ID' });
+        return;
+      }
+
+      const evaluation = db.getEvaluationById(id);
       if (!evaluation) {
-        res.status(404).json({ error: `Evaluation ${req.params.id} not found` });
+        res.status(404).json({ error: 'Evaluation not found' });
         return;
       }
       res.json(evaluation);
     } catch (error) {
-      res.status(500).json({ error: String(error) });
+      res.status(500).json({ error: sanitizeError(error) });
     }
   });
 
   // List violations
   app.get('/api/violations', (req: Request, res: Response) => {
     try {
+      // SECURITY: Validate and limit query parameters
       const tenetId = req.query.tenet_id ? parseInt(req.query.tenet_id as string, 10) : undefined;
-      const limit = parseInt(req.query.limit as string, 10) || 100;
+      const limit = Math.min(parseInt(req.query.limit as string, 10) || 100, 1000);
+
+      if (tenetId !== undefined && (isNaN(tenetId) || tenetId < 0)) {
+        res.status(400).json({ error: 'Invalid tenet_id' });
+        return;
+      }
 
       let violations;
       if (tenetId) {
@@ -232,22 +325,19 @@ export function createHttpServer(
 
       res.json({ violations, count: violations.length });
     } catch (error) {
-      res.status(500).json({ error: String(error) });
+      res.status(500).json({ error: sanitizeError(error) });
     }
   });
 
   // Suggest remediation
   app.post('/api/remediation', (req: Request, res: Response) => {
     try {
-      const { violation_description, tenet_violated, context } = req.body;
-      if (!violation_description || !tenet_violated) {
-        res.status(400).json({ error: 'violation_description and tenet_violated are required' });
-        return;
-      }
+      // SECURITY: Validate input with Zod schema
+      const validated = RemediationSchema.parse(req.body);
 
-      const tenet = db.getTenetByName(tenet_violated);
+      const tenet = db.getTenetByName(validated.tenet_violated);
       if (!tenet) {
-        res.status(404).json({ error: `Tenet ${tenet_violated} not found` });
+        res.status(404).json({ error: 'Tenet not found' });
         return;
       }
 
@@ -264,7 +354,8 @@ export function createHttpServer(
         related_tenets: [],
       });
     } catch (error) {
-      res.status(500).json({ error: String(error) });
+      const status = error instanceof z.ZodError ? 400 : 500;
+      res.status(status).json({ error: sanitizeError(error) });
     }
   });
 

@@ -13,6 +13,31 @@ interface WSMessage {
   id?: string;
 }
 
+// SECURITY: Maximum message size (1MB)
+const MAX_MESSAGE_SIZE = 1024 * 1024;
+
+/**
+ * SECURITY: Sanitize error messages to prevent information disclosure
+ */
+function sanitizeError(error: unknown): string {
+  const message = error instanceof Error ? error.message : 'Unknown error';
+
+  // Strip sensitive patterns
+  const sensitivePatterns = [
+    /\/Users\/[^/\s]+/g,           // User paths
+    /\/home\/[^/\s]+/g,            // Linux home paths
+    /at\s+.+:\d+:\d+/g,            // Stack trace lines
+    /SQLITE_\w+/g,                 // SQLite error codes
+  ];
+
+  let sanitized = message;
+  for (const pattern of sensitivePatterns) {
+    sanitized = sanitized.replace(pattern, '[REDACTED]');
+  }
+
+  return sanitized;
+}
+
 export function createWebSocketServer(
   db: DatabaseManager,
   evaluator: Evaluator,
@@ -37,6 +62,15 @@ export function createWebSocketServer(
     }));
 
     ws.on('message', (message: Buffer) => {
+      // SECURITY: Check message size limit
+      if (message.length > MAX_MESSAGE_SIZE) {
+        ws.send(JSON.stringify({
+          type: 'error',
+          data: { message: 'Message too large' },
+        }));
+        return;
+      }
+
       try {
         const msg: WSMessage = JSON.parse(message.toString());
         handleMessage(ws, msg);
@@ -155,7 +189,7 @@ export function createWebSocketServer(
     } catch (error) {
       ws.send(JSON.stringify({
         type: 'error',
-        data: { message: String(error) },
+        data: { message: sanitizeError(error) },
         id: msg.id,
       }));
     }
