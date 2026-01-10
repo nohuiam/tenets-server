@@ -3,6 +3,26 @@
  * Port 9027 - Real-time events
  */
 import { WebSocketServer, WebSocket } from 'ws';
+// SECURITY: Maximum message size (1MB)
+const MAX_MESSAGE_SIZE = 1024 * 1024;
+/**
+ * SECURITY: Sanitize error messages to prevent information disclosure
+ */
+function sanitizeError(error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    // Strip sensitive patterns
+    const sensitivePatterns = [
+        /\/Users\/[^/\s]+/g, // User paths
+        /\/home\/[^/\s]+/g, // Linux home paths
+        /at\s+.+:\d+:\d+/g, // Stack trace lines
+        /SQLITE_\w+/g, // SQLite error codes
+    ];
+    let sanitized = message;
+    for (const pattern of sensitivePatterns) {
+        sanitized = sanitized.replace(pattern, '[REDACTED]');
+    }
+    return sanitized;
+}
 export function createWebSocketServer(db, evaluator, port) {
     const wss = new WebSocketServer({ port });
     const clients = new Set();
@@ -19,6 +39,14 @@ export function createWebSocketServer(db, evaluator, port) {
             },
         }));
         ws.on('message', (message) => {
+            // SECURITY: Check message size limit
+            if (message.length > MAX_MESSAGE_SIZE) {
+                ws.send(JSON.stringify({
+                    type: 'error',
+                    data: { message: 'Message too large' },
+                }));
+                return;
+            }
             try {
                 const msg = JSON.parse(message.toString());
                 handleMessage(ws, msg);
@@ -126,7 +154,7 @@ export function createWebSocketServer(db, evaluator, port) {
         catch (error) {
             ws.send(JSON.stringify({
                 type: 'error',
-                data: { message: String(error) },
+                data: { message: sanitizeError(error) },
                 id: msg.id,
             }));
         }

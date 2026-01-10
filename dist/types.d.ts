@@ -173,10 +173,14 @@ export interface SuggestRemediationOutput {
     related_tenets: string[];
 }
 export declare const SignalTypes: {
+    readonly DOCK_REQUEST: 1;
+    readonly DOCK_APPROVE: 2;
+    readonly DOCK_REJECT: 3;
+    readonly HEARTBEAT: 4;
+    readonly DISCONNECT: 5;
     readonly DECISION_PENDING: 208;
-    readonly OPERATION_COMPLETE: 255;
+    readonly OPERATION_COMPLETE: 223;
     readonly LESSON_LEARNED: 229;
-    readonly HEARTBEAT: 0;
     readonly TENET_VIOLATION: 176;
     readonly COUNTERFEIT_DETECTED: 177;
     readonly ETHICS_AFFIRMED: 178;

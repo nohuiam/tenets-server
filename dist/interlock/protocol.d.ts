@@ -1,30 +1,40 @@
 /**
- * InterLock Protocol - BaNano encoding/decoding
+ * InterLock Protocol - Official BaNano Binary Format
+ *
+ * 12-byte header:
+ * Bytes 0-1:   Signal Type (uint16, big-endian)
+ * Bytes 2-3:   Protocol Version (uint16, big-endian)
+ * Bytes 4-7:   Payload Length (uint32, big-endian)
+ * Bytes 8-11:  Timestamp (uint32, Unix seconds)
+ * Bytes 12+:   Payload (JSON, UTF-8)
  */
 export interface Signal {
-    code: number;
-    name: string;
-    sender: string;
+    signalType: number;
+    version: number;
     timestamp: number;
-    data?: Record<string, unknown>;
+    payload: {
+        sender: string;
+        [key: string]: unknown;
+    };
 }
 /**
- * Encode a signal to buffer
+ * Encode a signal to BaNano binary format
  */
-export declare function encode(signal: Signal): Buffer;
+export declare function encode(signalType: number, sender: string, data?: Record<string, unknown>): Buffer;
 /**
- * Decode a buffer to signal
+ * Decode a BaNano binary buffer to Signal
+ * Returns null if buffer is invalid
  */
 export declare function decode(buffer: Buffer): Signal | null;
 /**
- * Get signal name from code
+ * Get signal name from type code
  */
-export declare function getSignalName(code: number): string;
+export declare function getSignalName(signalType: number): string;
 /**
- * Check if a signal code is valid
+ * Check if a signal type is valid (known)
  */
-export declare function isValidSignal(code: number): boolean;
+export declare function isValidSignal(signalType: number): boolean;
 /**
- * Create a signal
+ * Create a Signal object for emitting
  */
-export declare function createSignal(code: number, data?: Record<string, unknown>): Signal;
+export declare function createSignal(signalType: number, data?: Record<string, unknown>): Signal;

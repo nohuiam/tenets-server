@@ -6,7 +6,7 @@ import dgram from 'dgram';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { encode, decode } from './protocol.js';
+import { encode, decode, getSignalName } from './protocol.js';
 import { handleSignal } from './handlers.js';
 import { isWhitelisted, getTumblerStats } from './tumbler.js';
 const __filename = fileURLToPath(import.meta.url);
@@ -22,6 +22,38 @@ const stats = {
 let peersMap = new Map();
 // Module-level instance for singleton pattern
 let interlockInstance = null;
+let heartbeatTimer = null;
+const HEARTBEAT_INTERVAL = 30000; // 30 seconds
+const SERVER_NAME = 'tenets-server';
+const SIGNAL_TYPE_HEARTBEAT = 0x04; // Ecosystem standard
+/**
+ * Start heartbeat broadcasting
+ */
+function startHeartbeat(socket, peers) {
+    if (heartbeatTimer) {
+        clearInterval(heartbeatTimer);
+    }
+    const sendHeartbeat = () => {
+        const buffer = encode(SIGNAL_TYPE_HEARTBEAT, SERVER_NAME, {
+            status: 'alive',
+            uptime: process.uptime()
+        });
+        for (const peer of peers) {
+            const address = peer.address || '127.0.0.1';
+            socket.send(buffer, 0, buffer.length, peer.port, address, (err) => {
+                if (err) {
+                    console.error(`[tenets-server] Heartbeat error to ${peer.name}:`, err.message);
+                }
+                else {
+                    stats.sent++;
+                }
+            });
+        }
+    };
+    heartbeatTimer = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL);
+    // Send initial heartbeat immediately
+    sendHeartbeat();
+}
 /**
  * Load peer configuration
  */
@@ -52,12 +84,14 @@ export function createInterLockMesh(db, evaluator, port) {
     }
     // Emit function to broadcast to peers
     function emit(signal) {
-        if (!isWhitelisted(signal.name)) {
-            console.error(`[tenets-server] Signal ${signal.name} not whitelisted, not emitting`);
+        const signalName = getSignalName(signal.signalType);
+        if (!isWhitelisted(signalName)) {
+            console.error(`[tenets-server] Signal ${signalName} not whitelisted, not emitting`);
             stats.dropped++;
             return;
         }
-        const buffer = encode(signal);
+        const { sender, ...data } = signal.payload;
+        const buffer = encode(signal.signalType, sender, data);
         for (const peer of peers) {
             const address = peer.address || '127.0.0.1';
             socket.send(buffer, 0, buffer.length, peer.port, address, (err) => {
@@ -95,7 +129,7 @@ export function createInterLockMesh(db, evaluator, port) {
             }
         }
         // Silently ignore non-whitelisted signals
-        if (!isWhitelisted(signal.name)) {
+        if (!isWhitelisted(getSignalName(signal.signalType))) {
             stats.dropped++;
             return;
         }
@@ -107,6 +141,7 @@ export function createInterLockMesh(db, evaluator, port) {
     socket.on('listening', () => {
         const addr = socket.address();
         console.error(`[tenets-server] InterLock mesh listening on ${addr.address}:${addr.port}`);
+        startHeartbeat(socket, peers);
     });
     // Bind to port
     socket.bind(port);
@@ -114,6 +149,10 @@ export function createInterLockMesh(db, evaluator, port) {
         socket,
         emit,
         close: () => {
+            if (heartbeatTimer) {
+                clearInterval(heartbeatTimer);
+                heartbeatTimer = null;
+            }
             socket.close();
             interlockInstance = null;
         },

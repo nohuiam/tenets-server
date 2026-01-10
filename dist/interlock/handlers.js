@@ -7,7 +7,7 @@ import { SignalTypes } from '../types.js';
  * Handle incoming signals
  */
 export function handleSignal(signal, context) {
-    switch (signal.code) {
+    switch (signal.signalType) {
         case SignalTypes.DECISION_PENDING:
             handleDecisionPending(signal, context);
             break;
@@ -21,7 +21,7 @@ export function handleSignal(signal, context) {
             handleHeartbeat(signal, context);
             break;
         default:
-            console.error(`[tenets-server] Unknown signal code: ${signal.code}`);
+            console.error(`[tenets-server] Unknown signal type: ${signal.signalType}`);
     }
 }
 /**
@@ -29,7 +29,7 @@ export function handleSignal(signal, context) {
  * Evaluate the pending decision
  */
 function handleDecisionPending(signal, context) {
-    const data = signal.data;
+    const { sender, ...data } = signal.payload;
     if (!data?.decision_text) {
         console.error('[tenets-server] DECISION_PENDING missing decision_text');
         return;
@@ -80,7 +80,7 @@ function handleDecisionPending(signal, context) {
  * Check if the operation had moral implications
  */
 function handleOperationComplete(signal, context) {
-    const data = signal.data;
+    const { sender, ...data } = signal.payload;
     if (!data?.operation) {
         return; // Silent ignore if no operation details
     }
@@ -90,7 +90,7 @@ function handleOperationComplete(signal, context) {
     if (quickResult.counterfeitDetected) {
         context.emit(createSignal(SignalTypes.COUNTERFEIT_DETECTED, {
             operation,
-            sender: signal.sender,
+            sender,
         }));
     }
 }
@@ -99,7 +99,7 @@ function handleOperationComplete(signal, context) {
  * Update patterns based on the lesson
  */
 function handleLessonLearned(signal, context) {
-    const data = signal.data;
+    const { sender, ...data } = signal.payload;
     if (!data?.lesson) {
         return;
     }
@@ -132,7 +132,7 @@ function handleLessonLearned(signal, context) {
     }
 }
 /**
- * Handle HEARTBEAT (0x00)
+ * Handle HEARTBEAT (0x04)
  * Track server health
  */
 function handleHeartbeat(_signal, _context) {
