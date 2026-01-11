@@ -8,7 +8,8 @@ import { seedTenetsInline } from '../src/database/seed.js';
 import { Evaluator } from '../src/services/evaluator.js';
 import { CounterfeitDetector } from '../src/services/counterfeit-detector.js';
 import { handleSignal, type HandlerContext } from '../src/interlock/handlers.js';
-import { SignalTypes, type Signal } from '../src/types.js';
+import { SignalTypes } from '../src/types.js';
+import { type Signal } from '../src/interlock/protocol.js';
 
 describe('Integration Tests', () => {
   let db: DatabaseManager;
@@ -114,11 +115,11 @@ describe('Integration Tests', () => {
 
     it('should process decision pending and emit result', () => {
       const signal: Signal = {
-        code: SignalTypes.DECISION_PENDING,
-        name: 'DECISION_PENDING',
-        sender: 'consciousness',
-        timestamp: Date.now(),
-        data: {
+        signalType: SignalTypes.DECISION_PENDING,
+        version: 0x0100,
+        timestamp: Math.floor(Date.now() / 1000),
+        payload: {
+          sender: 'consciousness',
           decision_text: 'Serve others with humility and love',
         },
       };
@@ -141,13 +142,16 @@ describe('Integration Tests', () => {
       ];
 
       for (const lesson of lessons) {
-        handleSignal({
-          code: SignalTypes.LESSON_LEARNED,
-          name: 'LESSON_LEARNED',
-          sender: 'consciousness',
-          timestamp: Date.now(),
-          data: { lesson },
-        }, context);
+        const signal: Signal = {
+          signalType: SignalTypes.LESSON_LEARNED,
+          version: 0x0100,
+          timestamp: Math.floor(Date.now() / 1000),
+          payload: {
+            sender: 'consciousness',
+            lesson,
+          },
+        };
+        handleSignal(signal, context);
       }
 
       const patterns = db.getAllPatterns();

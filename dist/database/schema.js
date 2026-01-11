@@ -4,6 +4,7 @@
  */
 import Database from 'better-sqlite3';
 import { v4 as uuidv4 } from 'uuid';
+import { clampConfidence } from '../types.js';
 // =============================================================================
 // Database Manager
 // =============================================================================
@@ -304,12 +305,13 @@ export class DatabaseManager {
     insertPattern(pattern) {
         const id = uuidv4();
         const now = Date.now();
+        const clampedConfidence = clampConfidence(pattern.confidence);
         const stmt = this.db.prepare(`
       INSERT INTO patterns (id, pattern_type, description, related_tenets, frequency, last_seen, confidence, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
-        stmt.run(id, pattern.pattern_type, pattern.description, JSON.stringify(pattern.related_tenets), pattern.frequency, pattern.last_seen, pattern.confidence, now);
-        return { ...pattern, id, created_at: now };
+        stmt.run(id, pattern.pattern_type, pattern.description, JSON.stringify(pattern.related_tenets), pattern.frequency, pattern.last_seen, clampedConfidence, now);
+        return { ...pattern, id, confidence: clampedConfidence, created_at: now };
     }
     updatePatternFrequency(id) {
         const stmt = this.db.prepare('UPDATE patterns SET frequency = frequency + 1, last_seen = ? WHERE id = ?');

@@ -6,4 +6,17 @@ import type { Server } from 'http';
 import type { DatabaseManager } from '../database/schema.js';
 import type { Evaluator } from '../services/evaluator.js';
 import type { CounterfeitDetector } from '../services/counterfeit-detector.js';
+interface TraceContext {
+    traceId: string;
+    spanId: string;
+    parentSpanId?: string;
+}
+declare global {
+    namespace Express {
+        interface Request {
+            trace?: TraceContext;
+        }
+    }
+}
 export declare function createHttpServer(db: DatabaseManager, evaluator: Evaluator, counterfeitDetector: CounterfeitDetector, port: number): Server;
+export {};

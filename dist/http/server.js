@@ -3,8 +3,26 @@
  * Port 8027
  */
 import express from 'express';
+import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { getInterLock } from '../interlock/index.js';
+const SERVER_NAME = 'tenets-server';
+function createTraceContext(parent) {
+    return {
+        traceId: parent?.traceId ?? randomUUID(),
+        spanId: randomUUID(),
+        parentSpanId: parent?.spanId
+    };
+}
+function parseTraceparent(header) {
+    const parts = header.split('-');
+    if (parts.length < 3)
+        return null;
+    return { traceId: parts[1], parentSpanId: parts[2] };
+}
+function formatTraceparent(trace) {
+    return `00-${trace.traceId}-${trace.spanId}-01`;
+}
 // SECURITY: API key for HTTP authentication
 const API_KEY = process.env.TENETS_API_KEY;
 // Input validation schemas
@@ -57,11 +75,40 @@ export function createHttpServer(db, evaluator, counterfeitDetector, port) {
     app.use((_req, res, next) => {
         res.header('Access-Control-Allow-Origin', '*');
         res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-        res.header('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
+        res.header('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, traceparent');
         if (_req.method === 'OPTIONS') {
             res.sendStatus(200);
             return;
         }
+        next();
+    });
+    // Distributed tracing middleware (Linus audit recommendation)
+    app.use((req, res, next) => {
+        // Skip tracing for health checks
+        if (req.path === '/health') {
+            next();
+            return;
+        }
+        // Extract or create trace context
+        const traceparent = req.headers['traceparent'];
+        let trace;
+        if (traceparent) {
+            const parsed = parseTraceparent(traceparent);
+            if (parsed) {
+                trace = createTraceContext({ traceId: parsed.traceId, spanId: parsed.parentSpanId });
+            }
+            else {
+                trace = createTraceContext();
+            }
+        }
+        else {
+            trace = createTraceContext();
+        }
+        req.trace = trace;
+        // Set response headers for trace propagation
+        res.setHeader('X-Trace-ID', trace.traceId);
+        res.setHeader('X-Span-ID', trace.spanId);
+        res.setHeader('traceparent', formatTraceparent(trace));
         next();
     });
     // SECURITY: API key authentication for all /api/* routes
@@ -78,13 +125,30 @@ export function createHttpServer(db, evaluator, counterfeitDetector, port) {
         }
         next();
     });
-    // Health check
+    // Track server start time for uptime
+    const startTime = Date.now();
+    // Health check (standardized cognitive server format)
     app.get('/health', (_req, res) => {
+        const interlock = getInterLock();
+        const stats = db.getStats();
         res.json({
             status: 'healthy',
             server: 'tenets-server',
             version: '1.0.0',
-            timestamp: Date.now(),
+            uptime_ms: Date.now() - startTime,
+            timestamp: new Date().toISOString(),
+            stats: {
+                totalTenets: stats.totalTenets,
+                totalEvaluations: stats.totalEvaluations,
+                totalViolations: stats.totalViolations
+            },
+            interlock: interlock ? {
+                active: true,
+                peers: interlock.getPeers().length,
+                stats: interlock.getStats()
+            } : {
+                active: false
+            }
         });
     });
     // Stats

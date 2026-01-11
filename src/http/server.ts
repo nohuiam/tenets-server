@@ -5,11 +5,48 @@
 
 import express, { Request, Response, NextFunction } from 'express';
 import type { Server } from 'http';
+import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import type { DatabaseManager } from '../database/schema.js';
 import type { Evaluator } from '../services/evaluator.js';
 import type { CounterfeitDetector } from '../services/counterfeit-detector.js';
 import { getInterLock } from '../interlock/index.js';
+
+const SERVER_NAME = 'tenets-server';
+
+// Trace context for distributed tracing (Linus audit recommendation)
+interface TraceContext {
+  traceId: string;
+  spanId: string;
+  parentSpanId?: string;
+}
+
+// Extend Express Request
+declare global {
+  namespace Express {
+    interface Request {
+      trace?: TraceContext;
+    }
+  }
+}
+
+function createTraceContext(parent?: Partial<TraceContext>): TraceContext {
+  return {
+    traceId: parent?.traceId ?? randomUUID(),
+    spanId: randomUUID(),
+    parentSpanId: parent?.spanId
+  };
+}
+
+function parseTraceparent(header: string): { traceId: string; parentSpanId: string } | null {
+  const parts = header.split('-');
+  if (parts.length < 3) return null;
+  return { traceId: parts[1], parentSpanId: parts[2] };
+}
+
+function formatTraceparent(trace: TraceContext): string {
+  return `00-${trace.traceId}-${trace.spanId}-01`;
+}
 
 // SECURITY: API key for HTTP authentication
 const API_KEY = process.env.TENETS_API_KEY;
@@ -80,11 +117,44 @@ export function createHttpServer(
   app.use((_req: Request, res: Response, next: NextFunction) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, traceparent');
     if (_req.method === 'OPTIONS') {
       res.sendStatus(200);
       return;
     }
+    next();
+  });
+
+  // Distributed tracing middleware (Linus audit recommendation)
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    // Skip tracing for health checks
+    if (req.path === '/health') {
+      next();
+      return;
+    }
+
+    // Extract or create trace context
+    const traceparent = req.headers['traceparent'] as string;
+    let trace: TraceContext;
+
+    if (traceparent) {
+      const parsed = parseTraceparent(traceparent);
+      if (parsed) {
+        trace = createTraceContext({ traceId: parsed.traceId, spanId: parsed.parentSpanId });
+      } else {
+        trace = createTraceContext();
+      }
+    } else {
+      trace = createTraceContext();
+    }
+
+    req.trace = trace;
+
+    // Set response headers for trace propagation
+    res.setHeader('X-Trace-ID', trace.traceId);
+    res.setHeader('X-Span-ID', trace.spanId);
+    res.setHeader('traceparent', formatTraceparent(trace));
+
     next();
   });
 
@@ -104,13 +174,32 @@ export function createHttpServer(
     next();
   });
 
-  // Health check
+  // Track server start time for uptime
+  const startTime = Date.now();
+
+  // Health check (standardized cognitive server format)
   app.get('/health', (_req: Request, res: Response) => {
+    const interlock = getInterLock();
+    const stats = db.getStats();
+
     res.json({
       status: 'healthy',
       server: 'tenets-server',
       version: '1.0.0',
-      timestamp: Date.now(),
+      uptime_ms: Date.now() - startTime,
+      timestamp: new Date().toISOString(),
+      stats: {
+        totalTenets: stats.totalTenets,
+        totalEvaluations: stats.totalEvaluations,
+        totalViolations: stats.totalViolations
+      },
+      interlock: interlock ? {
+        active: true,
+        peers: interlock.getPeers().length,
+        stats: interlock.getStats()
+      } : {
+        active: false
+      }
     });
   });
 

@@ -21,6 +21,7 @@ import type {
   Stats,
   CounterfeitMatch,
 } from '../types.js';
+import { clampConfidence } from '../types.js';
 
 // =============================================================================
 // Database Manager
@@ -400,6 +401,7 @@ export class DatabaseManager {
   insertPattern(pattern: Omit<Pattern, 'id' | 'created_at'>): Pattern {
     const id = uuidv4();
     const now = Date.now();
+    const clampedConfidence = clampConfidence(pattern.confidence);
     const stmt = this.db.prepare(`
       INSERT INTO patterns (id, pattern_type, description, related_tenets, frequency, last_seen, confidence, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -411,10 +413,10 @@ export class DatabaseManager {
       JSON.stringify(pattern.related_tenets),
       pattern.frequency,
       pattern.last_seen,
-      pattern.confidence,
+      clampedConfidence,
       now
     );
-    return { ...pattern, id, created_at: now };
+    return { ...pattern, id, confidence: clampedConfidence, created_at: now };
   }
 
   updatePatternFrequency(id: string): void {

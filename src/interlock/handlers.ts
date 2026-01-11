@@ -35,6 +35,10 @@ export function handleSignal(signal: Signal, context: HandlerContext): void {
       handleHeartbeat(signal, context);
       break;
 
+    case SignalTypes.ETHICAL_CHECK_REQUEST:
+      handleEthicalCheckRequest(signal, context);
+      break;
+
     default:
       console.error(`[tenets-server] Unknown signal type: ${signal.signalType}`);
   }
@@ -161,4 +165,45 @@ function handleLessonLearned(signal: Signal, context: HandlerContext): void {
  */
 function handleHeartbeat(_signal: Signal, _context: HandlerContext): void {
   // Just acknowledge - could be used for peer health tracking
+}
+
+/**
+ * Handle ETHICAL_CHECK_REQUEST (0xE8) - requests from AstroSentries for ethical evaluation
+ * Evaluates the operation against tenets and returns a response
+ */
+function handleEthicalCheckRequest(signal: Signal, context: HandlerContext): void {
+  const { sender, requestId, serverId, operation, riskLevel } = signal.payload as {
+    sender: string;
+    requestId: string;
+    serverId: string;
+    operation: string;
+    context: Record<string, unknown>;
+    riskLevel?: 'low' | 'medium' | 'high';
+  };
+
+  console.log(`[tenets-server] ETHICAL_CHECK_REQUEST from ${serverId}: ${operation} (risk: ${riskLevel})`);
+
+  // Perform ethical evaluation
+  const evaluation = context.evaluator.evaluate(operation, {
+    context: signal.payload.context as Record<string, unknown>,
+    depth: riskLevel === 'high' ? 'deep' : 'standard'
+  });
+
+  // Determine approval based on assessment
+  const approved = evaluation.overall_assessment !== 'reject';
+  const tenetsEvaluated = Object.keys(evaluation.tenet_scores).map(id => {
+    const tenet = context.db.getTenetById(Number(id));
+    return tenet?.name || `Tenet ${id}`;
+  });
+
+  // Emit response signal
+  context.emit(createSignal(SignalTypes.ETHICAL_CHECK_RESPONSE, {
+    requestId,
+    approved,
+    tenetsEvaluated,
+    concerns: evaluation.violations.map(v => v.description),
+    recommendations: evaluation.recommendations
+  }));
+
+  console.log(`[tenets-server] Ethical check ${approved ? 'APPROVED' : 'REJECTED'} for ${serverId}`);
 }

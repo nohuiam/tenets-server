@@ -251,6 +251,13 @@ export declare const TENETS_CONFIG: {
     readonly GAP_PENALTY: 0.15;
     readonly PRIMARY_TESTS: readonly ["love", "vulnerability", "counterfeit", "systemic", "transformation"];
 };
+export declare const MAX_CONFIDENCE = 0.95;
+export declare const MIN_CONFIDENCE = 0.05;
+/**
+ * Clamp confidence to valid bounds [MIN_CONFIDENCE, MAX_CONFIDENCE]
+ * Prevents unbounded confidence growth
+ */
+export declare function clampConfidence(value: number): number;
 export interface Stats {
     totalTenets: number;
     totalEvaluations: number;

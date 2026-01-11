@@ -226,6 +226,14 @@ export const SignalTypes = {
   OPERATION_COMPLETE: 0xDF,  // Moved from 0xFF to avoid conflict
   LESSON_LEARNED: 0xE5,
 
+  // Cognitive-AstroSentry integration signals
+  ASTROSENTRY_EVENT: 0xE6,        // AstroSentry → Cognitive: Report operation outcome
+  COGNITIVE_INSIGHT: 0xE7,        // Cognitive → AstroSentry: Pattern/recommendation
+  ETHICAL_CHECK_REQUEST: 0xE8,    // AstroSentry → tenets-server: Request ethical evaluation
+  ETHICAL_CHECK_RESPONSE: 0xE9,   // tenets-server → AstroSentry: Ethical verdict
+  EXPERIENCE_QUERY: 0xEA,         // Any → experience-layer: Query historical patterns
+  EXPERIENCE_RESPONSE: 0xEB,      // experience-layer → Requester: Historical data response
+
   // Outgoing signals
   TENET_VIOLATION: 0xB0,
   COUNTERFEIT_DETECTED: 0xB1,
@@ -325,6 +333,18 @@ export const TENETS_CONFIG = {
     'transformation'
   ]
 } as const;
+
+// Confidence bounds (Linus audit recommendation)
+export const MAX_CONFIDENCE = 0.95;
+export const MIN_CONFIDENCE = 0.05;
+
+/**
+ * Clamp confidence to valid bounds [MIN_CONFIDENCE, MAX_CONFIDENCE]
+ * Prevents unbounded confidence growth
+ */
+export function clampConfidence(value: number): number {
+  return Math.max(MIN_CONFIDENCE, Math.min(MAX_CONFIDENCE, value));
+}
 
 // =============================================================================
 // Utility Types

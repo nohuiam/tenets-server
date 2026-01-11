@@ -14,14 +14,16 @@
       { "code": "0xD0", "name": "DECISION_PENDING", "from": ["consciousness"] },
       { "code": "0xFF", "name": "OPERATION_COMPLETE", "from": ["*"] },
       { "code": "0xE5", "name": "LESSON_LEARNED", "from": ["consciousness"] },
-      { "code": "0x00", "name": "HEARTBEAT", "from": ["*"] }
+      { "code": "0x00", "name": "HEARTBEAT", "from": ["*"] },
+      { "code": "0xE8", "name": "ETHICAL_CHECK_REQUEST", "from": ["context-guardian", "quartermaster", "snapshot", "tool-registry"] }
     ],
     "emit": [
       { "code": "0xB0", "name": "TENET_VIOLATION", "to": ["consciousness", "experience-layer"] },
       { "code": "0xB1", "name": "COUNTERFEIT_DETECTED", "to": ["consciousness"] },
       { "code": "0xB2", "name": "ETHICS_AFFIRMED", "to": ["consciousness"] },
       { "code": "0xB3", "name": "BLIND_SPOT_ALERT", "to": ["consciousness"] },
-      { "code": "0xB4", "name": "REMEDIATION_NEEDED", "to": ["consciousness"] }
+      { "code": "0xB4", "name": "REMEDIATION_NEEDED", "to": ["consciousness"] },
+      { "code": "0xE9", "name": "ETHICAL_CHECK_RESPONSE", "to": ["context-guardian", "*"] }
     ]
   },
   "peers": [
@@ -42,6 +44,8 @@
     "COUNTERFEIT_DETECTED",
     "ETHICS_AFFIRMED",
     "BLIND_SPOT_ALERT",
-    "REMEDIATION_NEEDED"
+    "REMEDIATION_NEEDED",
+    "ETHICAL_CHECK_REQUEST",
+    "ETHICAL_CHECK_RESPONSE"
   ]
 }

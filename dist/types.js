@@ -46,3 +46,13 @@ export const TENETS_CONFIG = {
         'transformation'
     ]
 };
+// Confidence bounds (Linus audit recommendation)
+export const MAX_CONFIDENCE = 0.95;
+export const MIN_CONFIDENCE = 0.05;
+/**
+ * Clamp confidence to valid bounds [MIN_CONFIDENCE, MAX_CONFIDENCE]
+ * Prevents unbounded confidence growth
+ */
+export function clampConfidence(value) {
+    return Math.max(MIN_CONFIDENCE, Math.min(MAX_CONFIDENCE, value));
+}

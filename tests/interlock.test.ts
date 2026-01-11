@@ -6,10 +6,10 @@ import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { DatabaseManager } from '../src/database/schema.js';
 import { seedTenetsInline } from '../src/database/seed.js';
 import { Evaluator } from '../src/services/evaluator.js';
-import { encode, decode, getSignalName, isValidSignal } from '../src/interlock/protocol.js';
+import { encode, decode, getSignalName, isValidSignal, createSignal, type Signal as ProtocolSignal } from '../src/interlock/protocol.js';
 import { isWhitelisted, getWhitelist } from '../src/interlock/tumbler.js';
 import { handleSignal, type HandlerContext } from '../src/interlock/handlers.js';
-import { SignalTypes, type Signal } from '../src/types.js';
+import { SignalTypes, type Signal as LegacySignal } from '../src/types.js';
 
 describe('InterLock', () => {
   let db: DatabaseManager;
@@ -29,36 +29,20 @@ describe('InterLock', () => {
   describe('protocol', () => {
     describe('encode/decode', () => {
       it('should encode and decode a signal', () => {
-        const signal: Signal = {
-          code: SignalTypes.DECISION_PENDING,
-          name: 'DECISION_PENDING',
-          sender: 'test-server',
-          timestamp: Date.now(),
-          data: { decision_text: 'Test decision' },
-        };
-
-        const encoded = encode(signal);
+        const encoded = encode(SignalTypes.DECISION_PENDING, 'test-server', { decision_text: 'Test decision' });
         const decoded = decode(encoded);
 
         expect(decoded).not.toBeNull();
-        expect(decoded?.code).toBe(signal.code);
-        expect(decoded?.name).toBe(signal.name);
-        expect(decoded?.sender).toBe(signal.sender);
+        expect(decoded?.signalType).toBe(SignalTypes.DECISION_PENDING);
+        expect(decoded?.payload.sender).toBe('test-server');
       });
 
       it('should handle signal without data', () => {
-        const signal: Signal = {
-          code: SignalTypes.HEARTBEAT,
-          name: 'HEARTBEAT',
-          sender: 'test-server',
-          timestamp: Date.now(),
-        };
-
-        const encoded = encode(signal);
+        const encoded = encode(SignalTypes.HEARTBEAT, 'test-server');
         const decoded = decode(encoded);
 
         expect(decoded).not.toBeNull();
-        expect(decoded?.data).toBeUndefined();
+        expect(decoded?.signalType).toBe(SignalTypes.HEARTBEAT);
       });
 
       it('should return null for invalid buffer', () => {
@@ -82,7 +66,7 @@ describe('InterLock', () => {
       });
 
       it('should return UNKNOWN for invalid codes', () => {
-        expect(getSignalName(0xAA)).toBe('UNKNOWN');
+        expect(getSignalName(0xAA)).toBe('UNKNOWN_0xAA');
       });
     });
 
@@ -103,20 +87,20 @@ describe('InterLock', () => {
   describe('tumbler', () => {
     describe('isWhitelisted', () => {
       it('should whitelist expected signals', () => {
-        expect(isWhitelisted('DECISION_PENDING')).toBe(true);
-        expect(isWhitelisted('OPERATION_COMPLETE')).toBe(true);
-        expect(isWhitelisted('LESSON_LEARNED')).toBe(true);
-        expect(isWhitelisted('HEARTBEAT')).toBe(true);
-        expect(isWhitelisted('TENET_VIOLATION')).toBe(true);
-        expect(isWhitelisted('COUNTERFEIT_DETECTED')).toBe(true);
-        expect(isWhitelisted('ETHICS_AFFIRMED')).toBe(true);
-        expect(isWhitelisted('BLIND_SPOT_ALERT')).toBe(true);
-        expect(isWhitelisted('REMEDIATION_NEEDED')).toBe(true);
+        expect(isWhitelisted('DECISION_PENDING').allowed).toBe(true);
+        expect(isWhitelisted('OPERATION_COMPLETE').allowed).toBe(true);
+        expect(isWhitelisted('LESSON_LEARNED').allowed).toBe(true);
+        expect(isWhitelisted('HEARTBEAT').allowed).toBe(true);
+        expect(isWhitelisted('TENET_VIOLATION').allowed).toBe(true);
+        expect(isWhitelisted('COUNTERFEIT_DETECTED').allowed).toBe(true);
+        expect(isWhitelisted('ETHICS_AFFIRMED').allowed).toBe(true);
+        expect(isWhitelisted('BLIND_SPOT_ALERT').allowed).toBe(true);
+        expect(isWhitelisted('REMEDIATION_NEEDED').allowed).toBe(true);
       });
 
       it('should reject non-whitelisted signals', () => {
-        expect(isWhitelisted('UNKNOWN_SIGNAL')).toBe(false);
-        expect(isWhitelisted('MALICIOUS_SIGNAL')).toBe(false);
+        expect(isWhitelisted('UNKNOWN_SIGNAL').allowed).toBe(false);
+        expect(isWhitelisted('MALICIOUS_SIGNAL').allowed).toBe(false);
       });
     });
 
@@ -133,7 +117,7 @@ describe('InterLock', () => {
   });
 
   describe('handlers', () => {
-    let emittedSignals: Signal[];
+    let emittedSignals: ProtocolSignal[];
     let context: HandlerContext;
 
     beforeEach(() => {
@@ -141,7 +125,7 @@ describe('InterLock', () => {
       context = {
         db,
         evaluator,
-        emit: (signal: Signal) => {
+        emit: (signal: ProtocolSignal) => {
           emittedSignals.push(signal);
         },
       };
@@ -149,12 +133,12 @@ describe('InterLock', () => {
 
     describe('DECISION_PENDING', () => {
       it('should evaluate decision and emit appropriate signal', () => {
-        const signal: Signal = {
-          code: SignalTypes.DECISION_PENDING,
-          name: 'DECISION_PENDING',
-          sender: 'consciousness',
-          timestamp: Date.now(),
-          data: {
+        const signal: ProtocolSignal = {
+          signalType: SignalTypes.DECISION_PENDING,
+          version: 0x0100,
+          timestamp: Math.floor(Date.now() / 1000),
+          payload: {
+            sender: 'consciousness',
             decision_text: 'Help others with love and care',
           },
         };
@@ -165,12 +149,12 @@ describe('InterLock', () => {
       });
 
       it('should emit response signal for decisions', () => {
-        const signal: Signal = {
-          code: SignalTypes.DECISION_PENDING,
-          name: 'DECISION_PENDING',
-          sender: 'consciousness',
-          timestamp: Date.now(),
-          data: {
+        const signal: ProtocolSignal = {
+          signalType: SignalTypes.DECISION_PENDING,
+          version: 0x0100,
+          timestamp: Math.floor(Date.now() / 1000),
+          payload: {
+            sender: 'consciousness',
             decision_text: 'Unconditional love seeking highest good of vulnerable others',
           },
         };
@@ -182,12 +166,12 @@ describe('InterLock', () => {
       });
 
       it('should emit TENET_VIOLATION for violations', () => {
-        const signal: Signal = {
-          code: SignalTypes.DECISION_PENDING,
-          name: 'DECISION_PENDING',
-          sender: 'consciousness',
-          timestamp: Date.now(),
-          data: {
+        const signal: ProtocolSignal = {
+          signalType: SignalTypes.DECISION_PENDING,
+          version: 0x0100,
+          timestamp: Math.floor(Date.now() / 1000),
+          payload: {
+            sender: 'consciousness',
             decision_text: 'Manipulate and control people through abuse',
           },
         };
@@ -195,21 +179,22 @@ describe('InterLock', () => {
         handleSignal(signal, context);
 
         const violations = emittedSignals.filter((s) =>
-          s.code === SignalTypes.TENET_VIOLATION ||
-          s.code === SignalTypes.COUNTERFEIT_DETECTED ||
-          s.code === SignalTypes.BLIND_SPOT_ALERT
+          s.signalType === SignalTypes.TENET_VIOLATION ||
+          s.signalType === SignalTypes.COUNTERFEIT_DETECTED ||
+          s.signalType === SignalTypes.BLIND_SPOT_ALERT
         );
 
         expect(violations.length).toBeGreaterThan(0);
       });
 
       it('should ignore signal without decision_text', () => {
-        const signal: Signal = {
-          code: SignalTypes.DECISION_PENDING,
-          name: 'DECISION_PENDING',
-          sender: 'consciousness',
-          timestamp: Date.now(),
-          data: {},
+        const signal: ProtocolSignal = {
+          signalType: SignalTypes.DECISION_PENDING,
+          version: 0x0100,
+          timestamp: Math.floor(Date.now() / 1000),
+          payload: {
+            sender: 'consciousness',
+          },
         };
 
         handleSignal(signal, context);
@@ -220,12 +205,12 @@ describe('InterLock', () => {
 
     describe('OPERATION_COMPLETE', () => {
       it('should check operation for moral implications', () => {
-        const signal: Signal = {
-          code: SignalTypes.OPERATION_COMPLETE,
-          name: 'OPERATION_COMPLETE',
-          sender: 'some-server',
-          timestamp: Date.now(),
-          data: {
+        const signal: ProtocolSignal = {
+          signalType: SignalTypes.OPERATION_COMPLETE,
+          version: 0x0100,
+          timestamp: Math.floor(Date.now() / 1000),
+          payload: {
+            sender: 'some-server',
             operation: 'Manipulate users with control tactics',
           },
         };
@@ -233,18 +218,20 @@ describe('InterLock', () => {
         handleSignal(signal, context);
 
         // Should emit COUNTERFEIT_DETECTED if counterfeit detected
-        const counterfeit = emittedSignals.find((s) => s.code === SignalTypes.COUNTERFEIT_DETECTED);
+        const counterfeit = emittedSignals.find((s) => s.signalType === SignalTypes.COUNTERFEIT_DETECTED);
         if (counterfeit) {
-          expect(counterfeit.data).toBeDefined();
+          expect(counterfeit.payload).toBeDefined();
         }
       });
 
       it('should ignore operation without details', () => {
-        const signal: Signal = {
-          code: SignalTypes.OPERATION_COMPLETE,
-          name: 'OPERATION_COMPLETE',
-          sender: 'some-server',
-          timestamp: Date.now(),
+        const signal: ProtocolSignal = {
+          signalType: SignalTypes.OPERATION_COMPLETE,
+          version: 0x0100,
+          timestamp: Math.floor(Date.now() / 1000),
+          payload: {
+            sender: 'some-server',
+          },
         };
 
         handleSignal(signal, context);
@@ -255,12 +242,12 @@ describe('InterLock', () => {
 
     describe('LESSON_LEARNED', () => {
       it('should create pattern for new lesson', () => {
-        const signal: Signal = {
-          code: SignalTypes.LESSON_LEARNED,
-          name: 'LESSON_LEARNED',
-          sender: 'consciousness',
-          timestamp: Date.now(),
-          data: {
+        const signal: ProtocolSignal = {
+          signalType: SignalTypes.LESSON_LEARNED,
+          version: 0x0100,
+          timestamp: Math.floor(Date.now() / 1000),
+          payload: {
+            sender: 'consciousness',
             lesson: 'Always consider vulnerable stakeholders',
           },
         };
@@ -282,12 +269,12 @@ describe('InterLock', () => {
           confidence: 0.5,
         });
 
-        const signal: Signal = {
-          code: SignalTypes.LESSON_LEARNED,
-          name: 'LESSON_LEARNED',
-          sender: 'consciousness',
-          timestamp: Date.now(),
-          data: {
+        const signal: ProtocolSignal = {
+          signalType: SignalTypes.LESSON_LEARNED,
+          version: 0x0100,
+          timestamp: Math.floor(Date.now() / 1000),
+          payload: {
+            sender: 'consciousness',
             lesson: 'Repeated lesson',
           },
         };
@@ -299,27 +286,24 @@ describe('InterLock', () => {
       });
 
       it('should categorize lessons by content', () => {
-        const signals: Signal[] = [
+        const signals: ProtocolSignal[] = [
           {
-            code: SignalTypes.LESSON_LEARNED,
-            name: 'LESSON_LEARNED',
-            sender: 'consciousness',
-            timestamp: Date.now(),
-            data: { lesson: 'This was a violation of trust' },
+            signalType: SignalTypes.LESSON_LEARNED,
+            version: 0x0100,
+            timestamp: Math.floor(Date.now() / 1000),
+            payload: { sender: 'consciousness', lesson: 'This was a violation of trust' },
           },
           {
-            code: SignalTypes.LESSON_LEARNED,
-            name: 'LESSON_LEARNED',
-            sender: 'consciousness',
-            timestamp: Date.now(),
-            data: { lesson: 'Detected a counterfeit pattern' },
+            signalType: SignalTypes.LESSON_LEARNED,
+            version: 0x0100,
+            timestamp: Math.floor(Date.now() / 1000),
+            payload: { sender: 'consciousness', lesson: 'Detected a counterfeit pattern' },
           },
           {
-            code: SignalTypes.LESSON_LEARNED,
-            name: 'LESSON_LEARNED',
-            sender: 'consciousness',
-            timestamp: Date.now(),
-            data: { lesson: 'Missed a blind spot' },
+            signalType: SignalTypes.LESSON_LEARNED,
+            version: 0x0100,
+            timestamp: Math.floor(Date.now() / 1000),
+            payload: { sender: 'consciousness', lesson: 'Missed a blind spot' },
           },
         ];
 
@@ -338,11 +322,13 @@ describe('InterLock', () => {
 
     describe('HEARTBEAT', () => {
       it('should handle heartbeat silently', () => {
-        const signal: Signal = {
-          code: SignalTypes.HEARTBEAT,
-          name: 'HEARTBEAT',
-          sender: 'some-server',
-          timestamp: Date.now(),
+        const signal: ProtocolSignal = {
+          signalType: SignalTypes.HEARTBEAT,
+          version: 0x0100,
+          timestamp: Math.floor(Date.now() / 1000),
+          payload: {
+            sender: 'some-server',
+          },
         };
 
         handleSignal(signal, context);
