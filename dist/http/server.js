@@ -6,6 +6,7 @@ import express from 'express';
 import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { getInterLock } from '../interlock/index.js';
+import { allToolDefinitions, createEvaluateDecisionHandler, createCheckCounterfeitHandler, createIdentifyBlindSpotsHandler, createRecordEvaluationHandler, createGetEvaluationHistoryHandler, createGetTenetHandler, createListTenetsHandler, createSuggestRemediationHandler, } from '../tools/index.js';
 const SERVER_NAME = 'tenets-server';
 function createTraceContext(parent) {
     return {
@@ -379,6 +380,52 @@ export function createHttpServer(db, evaluator, counterfeitDetector, port) {
         catch (error) {
             const status = error instanceof z.ZodError ? 400 : 500;
             res.status(status).json({ error: sanitizeError(error) });
+        }
+    });
+    // ===== GATEWAY INTEGRATION ENDPOINTS =====
+    // List all MCP tools (for gateway_tools)
+    app.get('/api/tools', (_req, res) => {
+        try {
+            const tools = allToolDefinitions.map(t => ({
+                name: t.name,
+                description: t.description,
+                inputSchema: t.inputSchema
+            }));
+            res.json({ tools, count: tools.length });
+        }
+        catch (error) {
+            res.status(500).json({ error: sanitizeError(error) });
+        }
+    });
+    // Execute MCP tool via HTTP (for gateway_mcp)
+    app.post('/api/tools/:toolName', async (req, res) => {
+        try {
+            const { toolName } = req.params;
+            const args = req.body.arguments || req.body;
+            // Create handlers - cast to any to avoid strict type mismatches between MCP and HTTP argument types
+            const handlers = {
+                'evaluate_decision': createEvaluateDecisionHandler(evaluator),
+                'check_counterfeit': createCheckCounterfeitHandler(counterfeitDetector),
+                'identify_blind_spots': createIdentifyBlindSpotsHandler(db),
+                'record_evaluation': createRecordEvaluationHandler(db),
+                'get_evaluation_history': createGetEvaluationHistoryHandler(db),
+                'get_tenet': createGetTenetHandler(db),
+                'list_tenets': createListTenetsHandler(db),
+                'suggest_remediation': createSuggestRemediationHandler(db),
+            };
+            const handler = handlers[toolName];
+            if (!handler) {
+                res.status(404).json({
+                    success: false,
+                    error: `Tool '${toolName}' not found. Available: ${Object.keys(handlers).join(', ')}`
+                });
+                return;
+            }
+            const result = await handler(args);
+            res.json({ success: true, result });
+        }
+        catch (error) {
+            res.status(400).json({ success: false, error: sanitizeError(error) });
         }
     });
     // 404 handler
